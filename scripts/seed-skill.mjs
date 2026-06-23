@@ -27,9 +27,16 @@ const PK = env.PLATFORM_PRIVATE_KEY;
 const MARKET = env.NEXT_PUBLIC_SKILL_MARKETPLACE_ADDRESS;
 const SKILL_KEY = Buffer.from(env.SKILL_ENCRYPTION_KEY, 'hex');
 
+// ── Skill metadata (override via env to list different skills) ────────────────
+const SKILL_FILE = process.env.SKILL_FILE ?? 'rps-markov-predictor.js';
+const SKILL_NAME = process.env.SKILL_NAME ?? 'RPS Markov Predictor';
+const SKILL_DESC = process.env.SKILL_DESC ?? 'Tracks opponent move patterns and counter-predicts.';
+const SKILL_TYPE = process.env.SKILL_TYPE ?? 'Logic';
+const SKILL_PRICE = process.env.SKILL_PRICE ?? '0.01';
+
 // ── 1. encrypt sample skill (iv|ciphertext|tag, base64) ───────────────────────
 const source = readFileSync(
-  new URL('../skill-examples/rps-markov-predictor.js', import.meta.url),
+  new URL(`../skill-examples/${SKILL_FILE}`, import.meta.url),
   'utf8'
 );
 const iv = randomBytes(12);
@@ -45,7 +52,7 @@ const payload = {
   cortex_skill: true,
   skill_id: skillUuid,
   encrypted_source,
-  public_metadata: { name: 'RPS Markov Predictor', type: 'Logic', version: '1.0.0', seller },
+  public_metadata: { name: SKILL_NAME, type: SKILL_TYPE, version: '1.0.0', seller },
 };
 
 const tmp = path.join(tmpdir(), `seed_${skillUuid}.json`);
@@ -74,13 +81,13 @@ const abi = [
   'event SkillListed(uint256 indexed skillId, address indexed seller, uint256 price, string storageRootHash)',
 ];
 const market = new ethers.Contract(MARKET, abi, signer);
-const priceWei = ethers.parseEther('0.01'); // 0.01 0G
+const priceWei = ethers.parseEther(SKILL_PRICE);
 
 console.log('Listing skill on 0G Chain…');
 const listTx = await market.listSkill(
-  'RPS Markov Predictor',
-  'Tracks opponent move patterns and counter-predicts.',
-  'Logic',
+  SKILL_NAME,
+  SKILL_DESC,
+  SKILL_TYPE,
   '1.0.0',
   priceWei,
   rootHash
