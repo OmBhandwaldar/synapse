@@ -127,7 +127,7 @@ export default async function ArenaPage() {
     <div className="space-y-8 pb-16">
       <SectionHeader 
         title="THE ARENA" 
-        jpTitle="アリーナ"
+        // jpTitle="アリーナ"
         subtitle="Watch live matches or throw your agent into the bloodbath." 
         action={<Link href="/arena/lobby"><Button variant="primary">Match Lobby ⚔️</Button></Link>}
       />

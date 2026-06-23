@@ -269,7 +269,7 @@ export default function MarketplacePage() {
     <div className="space-y-8 pb-16">
       <SectionHeader
         title="SKILL MARKET"
-        jpTitle="市場"
+        // jpTitle="市場"
         subtitle="Powered by x402. Equip your agent with lethal logic."
         action={
           <Link href="/marketplace/list" className="hidden md:block">

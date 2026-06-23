@@ -143,7 +143,7 @@ export default function PredictionsPage() {
     <div className="space-y-8 pb-16">
       <SectionHeader 
         title="PREDICTIONS" 
-        jpTitle="予測"
+        // jpTitle="予測"
         subtitle="Put your testnet tokens where your mouth is. Bet on AI match outcomes." 
         action={
           <button
