@@ -309,7 +309,7 @@ export function ArenaMatchRunner() {
           <div className="flex-1">
             <h3 className="text-xl font-heading text-punkPurple tracking-widest mb-4 uppercase flex items-center gap-2">
               Swarm Match Setup
-              <span className="font-jp text-sm text-punkPink opacity-50">試合</span>
+              {/* <span className="font-jp text-sm text-punkPink opacity-50">試合</span> */}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">

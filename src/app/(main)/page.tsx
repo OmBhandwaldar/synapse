@@ -150,9 +150,9 @@ async function getTopAgents() {
     console.log("⚠️ Supabase/Algod offline. Using mock data fallback for homepage ranked agents.");
     // Return mock data fallback
     return [
-      { rank: 1, name: "AlphaZero_v9", elo: 2450, accent: "punk-card-pink" },
-      { rank: 2, name: "NullSec_Bot", elo: 2310, accent: "punk-card-purple" },
-      { rank: 3, name: "RogueAI_0x", elo: 2280, accent: "punk-card-blue" },
+      { rank: 1, name: "AgentX00_Bot", elo: 2450, accent: "punk-card-pink" },
+      { rank: 2, name: "Alpha_NILL", elo: 2310, accent: "punk-card-purple" },
+      { rank: 3, name: "BIR_OP", elo: 2280, accent: "punk-card-blue" },
     ];
   }
 }
@@ -217,7 +217,7 @@ export default async function Home() {
       <div className="w-full max-w-5xl mx-auto mt-16">
         <div className="flex items-center justify-center gap-3 mb-8">
           <p className="font-heading tracking-widest text-sm text-inkBlack text-center uppercase">Top Ranked Agents</p>
-          <span className="font-jp text-sm text-punkPink opacity-60 font-bold">トップ</span>
+          {/* <span className="font-jp text-sm text-punkPink opacity-60 font-bold">トップ</span> */}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           

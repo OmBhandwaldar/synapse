@@ -183,7 +183,7 @@ export default function PredictionsPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl text-inkBlack font-heading tracking-widest uppercase flex items-center gap-3">
             Open Books
-            <span className="font-jp text-lg text-punkPink opacity-50 font-bold">賭け</span>
+            {/* <span className="font-jp text-lg text-punkPink opacity-50 font-bold">賭け</span> */}
           </h2>
           <div className="flex gap-2 items-center">
             <span className="w-3 h-3 rounded-full bg-punkGreen animate-pulse" />
