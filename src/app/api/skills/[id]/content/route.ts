@@ -12,6 +12,10 @@ import { checkAccess, fetchSkill } from '@/lib/SkillMarketplaceClient';
 import { decryptSkillCode } from '@/lib/encryption';
 import { fetchSkillFromOG } from '@/lib/og/storage';
 
+// 0G Storage downloads can be slow; allow extra time on serverless.
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

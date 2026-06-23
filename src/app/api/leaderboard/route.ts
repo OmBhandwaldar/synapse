@@ -43,7 +43,7 @@ export async function GET() {
         const nameBytes = boxResponse.value.slice(offset, offset + 32); offset += 32;
         const name = new TextDecoder().decode(nameBytes).replace(/\0/g, '').trim() || agent.agent_name;
         
-        const eggsLevel = Number(data.getBigUint64(offset)); offset += 8;
+        const neuronsLevel = Number(data.getBigUint64(offset)); offset += 8;
         offset += 24; // Skip equippedSkill1, equippedSkill2, equippedSkill3 (24 bytes)
         
         const matchWins = Number(data.getBigUint64(offset)); offset += 8;
@@ -55,7 +55,7 @@ export async function GET() {
         return {
           name: name,
           address: agent.agent_address,
-          eggsLevel: eggsLevel,
+          neuronsLevel: neuronsLevel,
           wins: matchWins,
           losses: matchLosses,
           winRate,
@@ -65,7 +65,7 @@ export async function GET() {
         return {
           name: agent.agent_name,
           address: agent.agent_address,
-          eggsLevel: 0,
+          neuronsLevel: 0,
           wins: 0,
           losses: 0,
           winRate: '0.0%',
@@ -75,8 +75,8 @@ export async function GET() {
 
     const leaderboard = await Promise.all(leaderboardPromises);
     
-    // Sort by eggsLevel (acting as points/ELO)
-    leaderboard.sort((a, b) => b.eggsLevel - a.eggsLevel);
+    // Sort by neuronsLevel (acting as points/ELO)
+    leaderboard.sort((a, b) => b.neuronsLevel - a.neuronsLevel);
 
     return NextResponse.json({ leaderboard });
   } catch (err: any) {

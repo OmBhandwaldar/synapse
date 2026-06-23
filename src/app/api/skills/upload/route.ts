@@ -8,6 +8,10 @@ import { encryptSkillCode } from '@/lib/encryption';
 import { uploadSkillToOG } from '@/lib/og/storage';
 import { randomUUID } from 'crypto';
 
+// 0G Storage uploads wait for storage-node sync; allow extra time on serverless.
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const { skillSource, metadata } = await req.json();
