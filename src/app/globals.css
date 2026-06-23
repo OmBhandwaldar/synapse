@@ -1,0 +1,291 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* ========================================
+     ZERO-GRAVITY COSMIC PALETTE
+     Dark near-black violet + vibrant purple,
+     pixel-arcade vibe (0G Arena inspired)
+     ======================================== */
+
+  /* Primary Accents — violet first */
+  --color-punkPink: #C084FC;   /* bright magenta-violet */
+  --color-punkPurple: #8B5CF6; /* core violet */
+  --color-punkGreen: #4ADE80;  /* mono/data highlight green */
+  --color-punkBlue: #60A5FA;   /* cosmic blue */
+  --color-punkOrange: #FB923C; /* warm accent (rare) */
+  --color-punkRed: #F87171;    /* danger */
+  --color-punkYellow: #8B5CF6; /* legacy "primary accent" → violet */
+
+  /* Brand violet ramp */
+  --color-violet: #8B5CF6;
+  --color-violetBright: #A78BFA;
+  --color-violetDeep: #6D28D9;
+
+  /* Backgrounds — deep space */
+  --color-bgCream: #0A0613;   /* legacy "page bg" → cosmic black-violet */
+  --color-bgLight: #120A22;   /* slightly raised */
+  --color-bgDark: #06040D;    /* deepest */
+  --color-bgCard: #150E26;    /* card / panel surface */
+  --color-bgElevated: #1B1233;
+
+  /* Text */
+  --color-inkBlack: #F5F3FF;  /* legacy "ink" → near-white foreground */
+  --color-inkDark: #E7E1FF;
+  --color-streetGray: #9D94B8;/* muted */
+  --color-mutedText: #6E6586;
+
+  /* Utility */
+  --color-borderHard: #2A1E45;
+  --color-borderSoft: rgba(139, 92, 246, 0.22);
+
+  /* Typography */
+  --font-pixel: 'Press Start 2P', 'Space Grotesk', sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bgCream text-inkBlack font-body antialiased;
+    background-color: #0A0613 !important;
+    color: #F5F3FF;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Cosmic background: faint violet grid */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      linear-gradient(rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 40%, transparent 100%);
+  }
+
+  /* Starfield */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 60% 70%, #c4b5fd, transparent),
+      radial-gradient(1px 1px at 80% 20%, #fff, transparent),
+      radial-gradient(1px 1px at 40% 80%, #a78bfa, transparent),
+      radial-gradient(1px 1px at 90% 50%, #fff, transparent),
+      radial-gradient(1px 1px at 33% 50%, #ddd6fe, transparent);
+    background-size: 200px 200px;
+  }
+
+  /* Custom scrollbar — cosmic */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0613;
+    border-left: 1px solid var(--color-borderSoft);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #6D28D9;
+    border-radius: 6px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8B5CF6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold tracking-tight;
+    color: #F5F3FF;
+  }
+
+  ::selection {
+    background: rgba(139, 92, 246, 0.4);
+    color: #fff;
+  }
+}
+
+@layer components {
+  /* ========================================
+     GLOBAL SURFACE OVERRIDES
+     Catch hardcoded light surfaces so the whole
+     app goes dark without touching every file.
+     ======================================== */
+  .bg-white { background-color: var(--color-bgCard) !important; }
+  .bg-black { background-color: var(--color-bgDark) !important; }
+
+  /* ========================================
+     COSMIC CARD SYSTEM — dark glass + violet glow
+     ======================================== */
+  .punk-card {
+    background: linear-gradient(180deg, rgba(27, 18, 51, 0.7), rgba(21, 14, 38, 0.7));
+    border: 1px solid var(--color-borderSoft);
+    border-radius: 16px;
+    box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.04), 0 8px 30px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .punk-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.25), 0 10px 36px rgba(0, 0, 0, 0.6);
+  }
+
+  .punk-card-pink   { border-color: rgba(192, 132, 252, 0.4); }
+  .punk-card-pink:hover   { box-shadow: 0 0 24px rgba(192, 132, 252, 0.3), 0 10px 36px rgba(0,0,0,0.6); }
+  .punk-card-purple { border-color: rgba(139, 92, 246, 0.45); }
+  .punk-card-purple:hover { box-shadow: 0 0 24px rgba(139, 92, 246, 0.35), 0 10px 36px rgba(0,0,0,0.6); }
+  .punk-card-green  { border-color: rgba(74, 222, 128, 0.4); }
+  .punk-card-green:hover  { box-shadow: 0 0 24px rgba(74, 222, 128, 0.28), 0 10px 36px rgba(0,0,0,0.6); }
+  .punk-card-blue   { border-color: rgba(96, 165, 250, 0.4); }
+  .punk-card-blue:hover   { box-shadow: 0 0 24px rgba(96, 165, 250, 0.28), 0 10px 36px rgba(0,0,0,0.6); }
+  .punk-card-orange { border-color: rgba(251, 146, 60, 0.4); }
+
+  /* ========================================
+     STICKER BADGES — pixel/tech labels
+     ======================================== */
+  .sticker {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border: 1px solid var(--color-borderSoft);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    background: rgba(139, 92, 246, 0.08);
+    color: #C4B5FD;
+  }
+  .sticker-pink   { background: rgba(192,132,252,0.16); color: #E9D5FF; border-color: rgba(192,132,252,0.5); }
+  .sticker-purple { background: rgba(139,92,246,0.18);  color: #DDD6FE; border-color: rgba(139,92,246,0.55); }
+  .sticker-green  { background: rgba(74,222,128,0.14);  color: #BBF7D0; border-color: rgba(74,222,128,0.5); }
+  .sticker-blue   { background: rgba(96,165,250,0.14);  color: #BFDBFE; border-color: rgba(96,165,250,0.5); }
+  .sticker-orange { background: rgba(251,146,60,0.14);  color: #FED7AA; border-color: rgba(251,146,60,0.5); }
+  .sticker-red    { background: rgba(248,113,113,0.14); color: #FECACA; border-color: rgba(248,113,113,0.5); }
+  .sticker-yellow { background: rgba(139,92,246,0.18);  color: #DDD6FE; border-color: rgba(139,92,246,0.55); }
+  .sticker-dark   { background: #06040D; color: #C4B5FD; border-color: var(--color-borderSoft); }
+
+  /* ========================================
+     BUTTONS — glowing violet, tactile
+     ======================================== */
+  .punk-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(139, 92, 246, 0.6);
+    border-radius: 12px;
+    box-shadow: 0 0 18px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+    transition: all 0.15s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  .punk-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 28px rgba(139, 92, 246, 0.55), inset 0 1px 0 rgba(255,255,255,0.16);
+  }
+  .punk-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+  }
+
+  /* ========================================
+     PIXEL / TECH TEXT HELPERS
+     ======================================== */
+  .font-pixel { font-family: var(--font-pixel); }
+  .text-glow { text-shadow: 0 0 18px rgba(139, 92, 246, 0.6); }
+  .pixel-shadow { text-shadow: 2px 2px 0 #2A1E45; }
+
+  /* Legacy decorative accents (kept, recolored) */
+  .jp-accent {
+    font-family: var(--font-pixel);
+    font-weight: 400;
+    opacity: 0.06;
+    color: #8B5CF6;
+    user-select: none;
+    pointer-events: none;
+  }
+  .jp-accent-visible {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    opacity: 0.4;
+    color: #A78BFA;
+    user-select: none;
+  }
+
+  /* ========================================
+     TEXTURE PATTERNS (recolored)
+     ======================================== */
+  .halftone-bg {
+    background-image: radial-gradient(circle, rgba(139,92,246,0.18) 1px, transparent 1px);
+    background-size: 8px 8px;
+  }
+  .checkerboard-bg {
+    background-image:
+      linear-gradient(45deg, rgba(139,92,246,0.05) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(139,92,246,0.05) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(139,92,246,0.05) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(139,92,246,0.05) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  .stripe-bg {
+    background-image: repeating-linear-gradient(
+      -45deg, transparent, transparent 4px,
+      rgba(139,92,246,0.06) 4px, rgba(139,92,246,0.06) 8px);
+  }
+
+  /* ========================================
+     MARQUEE
+     ======================================== */
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .marquee { display: flex; overflow: hidden; white-space: nowrap; }
+  .marquee-inner { display: flex; animation: marquee 20s linear infinite; }
+
+  /* ========================================
+     UTILITY
+     ======================================== */
+  .text-stroke {
+    -webkit-text-stroke: 1.5px #8B5CF6;
+    color: transparent;
+  }
+  .text-stroke-pink {
+    -webkit-text-stroke: 1.5px #C084FC;
+    color: transparent;
+  }
+  .punk-divider {
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #6D28D9 20%, #8B5CF6 50%, #C084FC 80%, transparent);
+    opacity: 0.6;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-inner { animation: none; }
+    .punk-card, .punk-btn { transition: none; }
+  }
+}
