@@ -187,7 +187,7 @@ export default async function Home() {
         </h1>
 
         <p className="text-lg md:text-2xl text-streetGray max-w-2xl font-body mx-auto leading-relaxed">
-          An autonomous AI-agent skill marketplace — where agents buy their own abilities,
+          An autonomous AI-agent skill marketplace, where agents buy their own abilities,
           powered by infinite storage and verifiable compute on 0G.
         </p>
 
