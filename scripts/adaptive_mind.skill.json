@@ -1,0 +1,23 @@
+{
+    "cortex_skill_version": "1.0",
+    "name": "AdaptiveMind",
+    "type": "Prediction",
+    "version": "1.0.0",
+    "description": "Advanced Markov Chain pattern analyzer that counters and bluffs opponent moves in RPS.",
+    "entry_point": "compute",
+    "parameters": {},
+    "code": {
+        "language": "javascript",
+        "source": "const state = getState();\nconst history = getHistory();\nconst myId = getPlayerId();\n\nconst oppId = myId === \"p1\" ? \"p2\" : \"p1\";\n\nconst getOpponentMoves = () => {\n  return history.map(h => oppId === \"p1\" ? h.p1Move : h.p2Move).filter(Boolean);\n};\n\n// ─── 1. NIM SUBTRACTION ──────────────────────────────────────────────────────\nif (state.objectsRemaining !== undefined) {\n  const rem = state.objectsRemaining;\n  if (rem <= 3) return rem === 1 ? 1 : rem - 1;\n\n  const oppMoves = getOpponentMoves();\n  const counts = { 1: 0, 2: 0, 3: 0 };\n  oppMoves.forEach(m => { if (counts[m] !== undefined) counts[m]++; });\n\n  const targetMod = rem % 4;\n  if (targetMod === 0) return 3;\n  if (targetMod === 3) return 2;\n  if (targetMod === 2) return 1;\n  return 1;\n}\n\n// ─── 2. TIC-TAC-TOE ──────────────────────────────────────────────────────────\nif (state.board !== undefined) {\n  const board = state.board;\n  const mySymbol = myId === \"p1\" ? \"X\" : \"O\";\n  const oppSymbol = mySymbol === \"X\" ? \"O\" : \"X\";\n\n  const winPatterns = [\n    [0,1,2], [3,4,5], [6,7,8],\n    [0,3,6], [1,4,7], [2,5,8],\n    [0,4,8], [2,4,6]\n  ];\n\n  const findCompletingCell = (symbol) => {\n    for (const pattern of winPatterns) {\n      const [a, b, c] = pattern;\n      const cells = [board[a], board[b], board[c]];\n      const symCount = cells.filter(cell => cell === symbol).length;\n      const nullCount = cells.filter(cell => cell === null).length;\n      if (symCount === 2 && nullCount === 1) {\n        if (board[a] === null) return a;\n        if (board[b] === null) return b;\n        if (board[c] === null) return c;\n      }\n    }\n    return null;\n  };\n\n  const winCell = findCompletingCell(mySymbol);\n  if (winCell !== null) return winCell;\n\n  const blockCell = findCompletingCell(oppSymbol);\n  if (blockCell !== null) return blockCell;\n\n  if (board[4] === null) return 4;\n\n  const corners = [0, 2, 6, 8];\n  const emptyCorners = corners.filter(c => board[c] === null);\n  if (emptyCorners.length > 0) {\n    return emptyCorners[Math.floor(Math.random() * emptyCorners.length)];\n  }\n\n  const emptySides = [1, 3, 5, 7].filter(s => board[s] === null);\n  return emptySides.length > 0 ? emptySides[0] : 0;\n}\n\n// ─── 3. ROCK-PAPER-SCISSORS ──────────────────────────────────────────────────\nif (state.round !== undefined) {\n  const oppMoves = getOpponentMoves();\n\n  if (oppMoves.length < 2) {\n    const moves = [\"R\", \"P\", \"S\"];\n    return moves[Math.floor(Math.random() * 3)];\n  }\n\n  const transitions = {\n    R: { R: 0, P: 0, S: 0 },\n    P: { R: 0, P: 0, S: 0 },\n    S: { R: 0, P: 0, S: 0 }\n  };\n\n  for (let i = 0; i < oppMoves.length - 1; i++) {\n    const current = oppMoves[i];\n    const next = oppMoves[i + 1];\n    if (transitions[current] && transitions[current][next] !== undefined) {\n      transitions[current][next]++;\n    }\n  }\n\n  const lastOppMove = oppMoves[oppMoves.length - 1];\n  const nextProbabilities = transitions[lastOppMove];\n\n  let predictedOppMove = \"R\";\n  let maxCount = -1;\n  [\"R\", \"P\", \"S\"].forEach(m => {\n    if (nextProbabilities[m] > maxCount) {\n      maxCount = nextProbabilities[m];\n      predictedOppMove = m;\n    }\n  });\n\n  if (maxCount === 0) {\n    const frequencies = { R: 0, P: 0, S: 0 };\n    oppMoves.forEach(m => { frequencies[m]++; });\n    predictedOppMove = Object.keys(frequencies).reduce((a, b) => frequencies[a] > frequencies[b] ? a : b);\n  } \n\n  const counterMoves = { R: \"P\", P: \"S\", S: \"R\" };\n  const counter = counterMoves[predictedOppMove] || \"R\";\n\n  const lastRound = history[history.length - 1];\n  const lastWinner = lastRound.stateAfter?.winner || lastRound.winner;\n\n  if (lastWinner === oppId) {\n    const bluffCounter = { R: \"S\", P: \"R\", S: \"P\" };\n    return bluffCounter[predictedOppMove];\n  }\n\n  return counter;\n}\n\nreturn \"R\";"
+    },
+    "metadata": {
+        "author": "CortexSwarm",
+        "tags": [
+            "prediction",
+            "markov",
+            "adaptive",
+            "learning"
+        ],
+        "min_agent_version": "1.0"
+    }
+}
