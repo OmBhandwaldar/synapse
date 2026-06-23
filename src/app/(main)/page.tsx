@@ -243,7 +243,7 @@ export default async function Home() {
           <h2 className="text-3xl text-inkBlack font-heading tracking-widest uppercase flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-punkGreen" />
             Match History
-            <span className="font-jp text-lg text-punkPink opacity-50 font-bold">履歴</span>
+            {/* <span className="font-jp text-lg text-punkPink opacity-50 font-bold">履歴</span> */}
           </h2>
           <Link href="/arena/lobby" className="text-streetGray hover:text-punkPink text-sm font-body font-bold tracking-widest transition-colors uppercase">
             Match Lobby →
