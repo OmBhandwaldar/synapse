@@ -26,6 +26,21 @@ export function AgentConsole({
   onPurchased?: () => void;
 }) {
   const [skillId, setSkillId] = useState<number | ''>('');
+  const [copied, setCopied] = useState(false);
+
+  async function copyAddr(addr: string) {
+    try {
+      await navigator.clipboard.writeText(addr);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = addr; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch { /* noop */ }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  }
 
   const [buyState, setBuyState] = useState<'idle' | 'buying' | 'done' | 'error'>('idle');
   const [buyRes, setBuyRes] = useState<any>(null);
@@ -113,11 +128,11 @@ export function AgentConsole({
             <div>
               <p className="font-heading text-lg uppercase tracking-tight text-inkBlack">{agent.agentName}</p>
               <button
-                onClick={() => navigator.clipboard.writeText(agent.agentAddress)}
-                className="font-mono text-[11px] text-streetGray hover:text-violetBright flex items-center gap-1"
+                onClick={() => copyAddr(agent.agentAddress)}
+                className={`font-mono text-[11px] flex items-center gap-1 transition-colors ${copied ? 'text-punkGreen' : 'text-streetGray hover:text-violetBright'}`}
                 title="Copy agent address"
               >
-                {short} <Copy size={10} />
+                {short} {copied ? <><CheckCircle size={11} /> copied</> : <Copy size={10} />}
               </button>
             </div>
           </div>
