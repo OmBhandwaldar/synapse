@@ -54,11 +54,16 @@ function buildGameMessages(
 State:${JSON.stringify(state)}
 History(last2):${JSON.stringify(recentHistory)}
 Skill algorithm suggested: ${JSON.stringify(skillMove)}.
-Valid moves: ${MOVE_HINTS[gameId] ?? 'any'}
-Should you follow or override the skill move? Respond ONLY as JSON: {"reasoning":"brief","move":"final move"}`;
+Decide whether to follow or override the skill move, then commit to ONE concrete move.
+The "move" field MUST be exactly one of: ${MOVE_HINTS[gameId] ?? 'a single valid move'} — never the word "random", "any", or an explanation.
+Respond ONLY as compact JSON: {"reasoning":"one short sentence","move":"<one valid move>"}`;
 
   return [
-    { role: 'system', content: 'You are a competitive game-playing AI agent. Respond only with strict JSON.' },
+    {
+      role: 'system',
+      content:
+        'You are a competitive game-playing AI agent. You always commit to exactly one concrete, valid move. Respond only with strict JSON, no extra text.',
+    },
     { role: 'user', content: prompt },
   ];
 }

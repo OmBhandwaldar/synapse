@@ -9,10 +9,9 @@ import WalletAccountModal from "./WalletAccountModal";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/", jp: "ホーム" },
-  { label: "Arena", href: "/arena", jp: "アリーナ" },
-  { label: "Predictions", href: "/predictions", jp: "予測" },
   { label: "Market", href: "/marketplace", jp: "市場" },
   { label: "Agents", href: "/agents", jp: "エージェント" },
+  // Arena + Predictions are deferred to a later round — hidden from nav.
 ];
 
 export default function Navbar() {

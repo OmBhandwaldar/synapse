@@ -5,16 +5,16 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { useAlgorandWallet } from '@/components/Providers';
+import { AgentConsole } from '@/components/AgentConsole';
 import type { SkillListing } from '@/lib/SkillMarketplaceClient';
+import { fetchAllSkills } from '@/lib/SkillMarketplaceClient';
 import {
   Sparkles, Terminal, Code, Cpu, Database,
-  Bot, Zap, Shield, Trophy, Clock, Wallet,
-  ChevronRight, AlertCircle, CheckCircle, Loader2, Plus, ExternalLink,
+  Bot, Wallet, Copy,
+  AlertCircle, CheckCircle, Loader2, Plus, ExternalLink,
 } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const DEPLOY_FEE_ALGO = 0;
-const NEURONS_PER_LEVEL = 50;
 
 const TYPE_ICONS: Record<string, any> = {
   Logic: Code,
@@ -120,7 +120,7 @@ function AgentCard({ agent, onSelect, isSelected }: { agent: AgentInfo; onSelect
       {hasSkills && (
         <div className="mt-2 flex flex-wrap gap-1">
           <span className="sticker sticker-green !text-[8px] !py-0.5 !px-1.5 !transform-none font-bold uppercase tracking-wider">
-            🛡️ ARMOR: {skillsCount} SKILLS
+            {skillsCount} SKILLS EQUIPPED
           </span>
         </div>
       )}
@@ -128,7 +128,7 @@ function AgentCard({ agent, onSelect, isSelected }: { agent: AgentInfo; onSelect
       {agent.balance !== undefined && (
         <div className="mt-2 pt-2 border-t border-borderSoft flex items-center gap-1">
           <Wallet size={10} className="text-streetGray" />
-          <span className="font-mono text-[10px] text-streetGray">{agent.balance.toFixed(3)} ALGO</span>
+          <span className="font-mono text-[10px] text-streetGray">{agent.balance.toFixed(4)} 0G</span>
           {agent.balance < 1 && (
             <span className="ml-auto text-[9px] text-punkRed font-bold animate-pulse">LOW FUNDS</span>
           )}
@@ -150,12 +150,11 @@ function DeployModal({
   tier: ReturnType<typeof getTier>;
   agentCount: number;
 }) {
-  const { activeAddress, signTransaction } = useAlgorandWallet();
+  const { activeAddress } = useAlgorandWallet();
   const [agentName, setAgentName] = useState('');
-  const [step, setStep] = useState<'form' | 'deploying' | 'signing' | 'done'>('form');
+  const [step, setStep] = useState<'form' | 'deploying' | 'done'>('form');
   const [newAgent, setNewAgent] = useState<AgentInfo | null>(null);
   const [error, setError] = useState('');
-  const [txId, setTxId] = useState('');
 
   const canDeploy = agentCount < tier.maxAgents;
 
@@ -233,20 +232,19 @@ function DeployModal({
                 />
               </div>
 
-              <div className="bg-bgCream p-4 border-2 border-dashed border-inkBlack space-y-2">
-                <p className="font-heading text-xs uppercase tracking-widest text-inkBlack">Deployment Cost</p>
+              <div className="bg-bgCream p-4 border border-dashed border-[rgba(139,92,246,0.4)] rounded-lg space-y-2">
+                <p className="font-heading text-xs uppercase tracking-widest text-inkBlack">How it works</p>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm text-streetGray">Deploy Fee</span>
-                  <span className="font-mono font-bold text-punkGreen">FREE ({DEPLOY_FEE_ALGO} ALGO)</span>
+                  <span className="font-mono text-sm text-streetGray">Deploy fee</span>
+                  <span className="font-mono font-bold text-punkGreen">FREE</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm text-streetGray">Agent Wallet Funding</span>
-                  <span className="font-mono font-bold text-streetGray">~2 ALGO (for gas)</span>
+                  <span className="font-mono text-sm text-streetGray">Agent gets</span>
+                  <span className="font-mono font-bold text-violetBright">its own 0G wallet</span>
                 </div>
-                <div className="flex items-center justify-between border-t border-inkBlack pt-2">
-                  <span className="font-heading text-xs uppercase text-inkBlack">Total</span>
-                  <span className="font-heading text-punkPink">~2 ALGO</span>
-                </div>
+                <p className="text-[10px] text-streetGray font-mono pt-1 border-t border-borderSoft">
+                  After creation, fund the agent with a little 0G at faucet.0g.ai so it can buy skills and pay gas.
+                </p>
               </div>
 
               {error && <p className="text-punkRed text-xs font-mono">{error}</p>}
@@ -271,25 +269,14 @@ function DeployModal({
             </div>
           )}
 
-          {/* Step: Signing */}
-          {step === 'signing' && newAgent && (
-            <div className="py-8 flex flex-col items-center gap-4 text-center">
-              <Loader2 size={32} className="text-punkPink animate-spin" />
-              <p className="font-mono text-sm text-inkBlack">Sign in Pera Wallet</p>
-              <p className="text-streetGray text-xs font-mono">
-                Please approve the transaction in your wallet to deploy and fund <strong>{newAgent.agentName}</strong>.
-              </p>
-            </div>
-          )}
-
           {/* Step: Done */}
           {step === 'done' && newAgent && (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-punkGreen/10 border-2 border-punkGreen rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-punkGreen/10 border border-punkGreen rounded-lg">
                 <CheckCircle size={20} className="text-punkGreen shrink-0" />
                 <div>
-                  <p className="text-punkGreen font-heading text-sm uppercase tracking-wider">Agent Registered!</p>
-                  <p className="text-inkBlack font-mono text-[10px]">Successfully registered on-chain.</p>
+                  <p className="text-punkGreen font-heading text-sm uppercase tracking-wider">Agent Wallet Created!</p>
+                  <p className="text-inkBlack font-mono text-[10px]">Fund it with 0G to activate.</p>
                 </div>
               </div>
 
@@ -308,26 +295,21 @@ function DeployModal({
                       onClick={() => {
                         navigator.clipboard.writeText(newAgent.agentAddress);
                       }}
-                      className="p-1.5 border border-inkBlack rounded bg-white hover:bg-punkYellow text-xs font-mono font-bold"
+                      className="p-1.5 border border-[rgba(139,92,246,0.4)] rounded bg-violet/10 hover:bg-violet/20 text-violetBright"
                       title="Copy Address"
                     >
-                      📋 Copy
+                      <Copy size={14} />
                     </button>
                   </div>
                 </div>
-                {txId && (
-                  <div>
-                    <span className="text-[10px] font-mono text-streetGray uppercase block">Transaction Link</span>
-                    <a
-                      href={`https://testnet.explorer.perawallet.app/tx/${txId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-punkBlue hover:underline font-mono text-[10px] flex items-center gap-1 mt-1 font-bold"
-                    >
-                      Verify on Pera Explorer <ExternalLink size={10} />
-                    </a>
-                  </div>
-                )}
+                <a
+                  href="https://faucet.0g.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-violetBright hover:underline font-mono text-[10px] flex items-center gap-1 font-bold"
+                >
+                  Fund this agent at faucet.0g.ai <ExternalLink size={10} />
+                </a>
               </div>
 
               <Button variant="primary" className="w-full mt-2" onClick={handleDone}>
@@ -346,6 +328,8 @@ export default function AgentsPage() {
   const { activeAddress } = useAlgorandWallet();
   const [ownedSkills, setOwnedSkills] = useState<SkillListing[]>([]);
   const [agents, setAgents] = useState<AgentInfo[]>([]);
+  const [allSkills, setAllSkills] = useState<SkillListing[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<AgentInfo | null>(null);
   const [loadingSkills, setLoadingSkills] = useState(false);
   const [showDeploy, setShowDeploy] = useState(false);
 
@@ -376,6 +360,17 @@ export default function AgentsPage() {
 
   useEffect(() => { loadOwnedSkills(); loadAgents(); }, [loadOwnedSkills, loadAgents]);
 
+  // Load all marketplace skills (reads the contract — no wallet needed) for the Agent Console.
+  useEffect(() => { fetchAllSkills().then(setAllSkills).catch(() => setAllSkills([])); }, []);
+
+  // Keep the selected agent in sync with fresh balances from loadAgents.
+  useEffect(() => {
+    if (selectedAgent) {
+      const fresh = agents.find(a => a.agentAddress === selectedAgent.agentAddress);
+      if (fresh && fresh !== selectedAgent) setSelectedAgent(fresh);
+    }
+  }, [agents, selectedAgent]);
+
   function handleDeployed(newAgent: AgentInfo) {
     setAgents(prev => [...prev, newAgent]);
   }
@@ -385,7 +380,7 @@ export default function AgentsPage() {
       <SectionHeader
         title="AGENT SWARM"
         // jpTitle="スウォーム"
-        subtitle="Deploy autonomous bots. Equip skills. Compete in the Arena via x402."
+        subtitle="Deploy autonomous agents. Fund them, then watch them buy skills and reason on 0G."
         action={
           <Button variant="primary" onClick={() => setShowDeploy(true)}>
             <Plus size={14} className="mr-2" />
@@ -400,7 +395,7 @@ export default function AgentsPage() {
       {/* No wallet */}
       {!activeAddress && (
         <Card className="p-12 text-center stripe-bg">
-          <div className="text-5xl mb-4">🔌</div>
+          <Wallet size={40} className="mx-auto mb-4 text-violet/50" />
           <p className="font-heading text-xl uppercase tracking-widest text-inkBlack mb-2">Connect Your Wallet</p>
           <p className="text-streetGray text-sm font-mono">Connect to manage your agent swarm.</p>
         </Card>
@@ -437,8 +432,8 @@ export default function AgentsPage() {
                     <AgentCard
                       key={a.agentAddress}
                       agent={a}
-                      isSelected={false}
-                      onSelect={() => {}}
+                      isSelected={selectedAgent?.agentAddress === a.agentAddress}
+                      onSelect={() => setSelectedAgent(a)}
                     />
                   ))
                 )}
@@ -495,26 +490,13 @@ export default function AgentsPage() {
             </div>
           </div>
 
-          {/* ── Main: Agent Detail / Loadout ── */}
-          <div className="lg:col-span-3 space-y-6">
-            <div className="punk-card checkerboard-bg min-h-[500px] flex items-center justify-center p-8 text-center border-4 border-inkBlack shadow-[8px_8px_0_#1a1a1a]">
-              <div>
-                <div className="text-5xl mb-6 flex justify-center gap-4">
-                  <span className="opacity-30 blur-[1px]">🕸️</span>
-                  <span className="animate-bounce">⚡</span>
-                  <span className="opacity-30 blur-[1px]">🕸️</span>
-                </div>
-                <p className="text-inkBlack text-3xl mb-3 font-heading tracking-widest uppercase">Agent Node Editor</p>
-                <p className="text-streetGray text-sm font-mono max-w-md mx-auto mb-8 bg-white/50 p-4 border-2 border-dashed border-inkBlack">
-                  Wire up your agent networks, configure AI skills, and execute complex logic directly within the node graph editor.
-                </p>
-                <a href="/agents/editor" className="inline-block">
-                  <Button variant="primary" className="text-lg px-8 py-4 shadow-xl hover:-translate-y-1 hover:shadow-[6px_6px_0_#1a1a1a] transition-all bg-punkPink border-4 border-inkBlack">
-                    Open Node Editor →
-                  </Button>
-                </a>
-              </div>
-            </div>
+          {/* ── Main: Agent Console (autonomy + 0G Compute) ── */}
+          <div className="lg:col-span-3">
+            <AgentConsole
+              agent={selectedAgent}
+              skills={allSkills}
+              onPurchased={() => { loadOwnedSkills(); loadAgents(); }}
+            />
           </div>
         </div>
       )}
