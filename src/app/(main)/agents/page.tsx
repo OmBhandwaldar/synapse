@@ -26,7 +26,7 @@ const TYPE_ICONS: Record<string, any> = {
 };
 
 const NEURON_LIMITS: { minNeurons: number; maxAgents: number; maxSkills: number; label: string }[] = [
-  { minNeurons: 0, maxAgents: 1, maxSkills: 2, label: 'Initiate' },
+  { minNeurons: 0, maxAgents: 3, maxSkills: 3, label: 'Initiate' },
   { minNeurons: 50, maxAgents: 2, maxSkills: 3, label: 'Runner' },
   { minNeurons: 150, maxAgents: 3, maxSkills: 4, label: 'Operative' },
   { minNeurons: 350, maxAgents: 5, maxSkills: 5, label: 'Ghost' },
