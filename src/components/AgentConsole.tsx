@@ -35,8 +35,10 @@ export function AgentConsole({
   const [thought, setThought] = useState<any>(null);
   const [thinkErr, setThinkErr] = useState('');
 
-  const lowFunds = agent?.balance !== undefined && agent.balance < 0.05;
-  const cheapest = useMemo(() => (skills.length ? Math.min(...skills.map(s => s.price)) : 0), [skills]);
+  const cheapest = useMemo(() => (skills.length ? Math.min(...skills.map(s => s.price)) : 0.01), [skills]);
+  // Need the cheapest skill price + a little gas headroom to act.
+  const minNeeded = cheapest + 0.003;
+  const lowFunds = agent?.balance !== undefined && agent.balance < minNeeded;
 
   async function handleAutonomousBuy() {
     if (!agent || skillId === '') return;
