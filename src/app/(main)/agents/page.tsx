@@ -101,10 +101,10 @@ function AgentCard({ agent, onSelect, isSelected }: { agent: AgentInfo; onSelect
   return (
     <div
       onClick={onSelect}
-      className={`punk-card p-4 cursor-pointer border-2 transition-all relative overflow-hidden ${
-        hasSkills
-          ? 'border-punkPink bg-punkPink/5 shadow-[0_0_15px_rgba(255,45,138,0.25)]'
-          : 'border-inkBlack hover:border-punkPurple bg-white'
+      className={`punk-card p-4 cursor-pointer transition-all relative overflow-hidden ${
+        isSelected
+          ? 'border border-[rgba(139,92,246,0.7)] shadow-[0_0_20px_rgba(139,92,246,0.35)]'
+          : 'border border-borderSoft hover:border-[rgba(139,92,246,0.5)]'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ function AgentCard({ agent, onSelect, isSelected }: { agent: AgentInfo; onSelect
         <div className="mt-2 pt-2 border-t border-borderSoft flex items-center gap-1">
           <Wallet size={10} className="text-streetGray" />
           <span className="font-mono text-[10px] text-streetGray">{agent.balance.toFixed(4)} 0G</span>
-          {agent.balance < 1 && (
+          {agent.balance < 0.013 && (
             <span className="ml-auto text-[9px] text-punkRed font-bold animate-pulse">LOW FUNDS</span>
           )}
         </div>
