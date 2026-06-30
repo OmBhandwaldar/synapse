@@ -155,6 +155,25 @@ function DeployModal({
   const [step, setStep] = useState<'form' | 'deploying' | 'done'>('form');
   const [newAgent, setNewAgent] = useState<AgentInfo | null>(null);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  async function copyAddress(addr: string) {
+    try {
+      await navigator.clipboard.writeText(addr);
+    } catch {
+      // Fallback for blocked clipboard API
+      const ta = document.createElement('textarea');
+      ta.value = addr;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch { /* noop */ }
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
 
   const canDeploy = agentCount < tier.maxAgents;
 
@@ -292,13 +311,11 @@ function DeployModal({
                       {newAgent.agentAddress}
                     </span>
                     <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(newAgent.agentAddress);
-                      }}
-                      className="p-1.5 border border-[rgba(139,92,246,0.4)] rounded bg-violet/10 hover:bg-violet/20 text-violetBright"
+                      onClick={() => copyAddress(newAgent.agentAddress)}
+                      className="px-2 py-1.5 border border-[rgba(139,92,246,0.4)] rounded bg-violet/10 hover:bg-violet/20 text-violetBright flex items-center gap-1 text-[10px] font-mono shrink-0"
                       title="Copy Address"
                     >
-                      <Copy size={14} />
+                      {copied ? <><CheckCircle size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
                     </button>
                   </div>
                 </div>
