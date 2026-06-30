@@ -38,7 +38,7 @@ export async function getAgentWallet(agentAddress: string): Promise<ethers.Walle
   const { data: agent, error } = await supabase
     .from('agents')
     .select('encrypted_secret_key, agent_address')
-    .eq('agent_address', agentAddress)
+    .eq('agent_address', agentAddress.toLowerCase())
     .single();
 
   if (error || !agent) {

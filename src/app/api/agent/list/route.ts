@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       .select('agent_address, agent_name, owner_address, created_at, equipped_skill_1, equipped_skill_2, equipped_skill_3');
     
     if (owner !== 'all') {
-      query = query.eq('owner_address', owner);
+      query = query.eq('owner_address', owner.toLowerCase());
     }
     
     const { data, error } = await query.order('created_at', { ascending: true });

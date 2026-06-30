@@ -42,10 +42,11 @@ export async function POST(req: NextRequest) {
     // 2. Encrypt the private key before saving
     const encryptedSk = await encryptKey(privateKeyHex);
 
-    // 3. Save to Supabase vault
+    // 3. Save to Supabase vault (addresses stored lowercase — MetaMask returns
+    //    lowercase, so we normalize everywhere to keep DB lookups consistent).
     const { error } = await supabase.from('agents').insert({
-      owner_address: ownerAddress,
-      agent_address: agentAddress,
+      owner_address: ownerAddress.toLowerCase(),
+      agent_address: agentAddress.toLowerCase(),
       encrypted_secret_key: encryptedSk,
       agent_name: agentName,
     });
