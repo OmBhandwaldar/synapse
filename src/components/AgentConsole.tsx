@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-  Cpu, Brain, ShoppingCart, ExternalLink, Loader2, CheckCircle,
-  AlertCircle, Wallet, Copy, ShieldCheck,
+  Cpu, ShoppingCart, ExternalLink, Loader2, CheckCircle,
+  AlertCircle, Wallet, Copy, ShieldCheck, Zap, Terminal,
 } from 'lucide-react';
 import type { SkillListing } from '@/lib/SkillMarketplaceClient';
 
@@ -46,9 +46,23 @@ export function AgentConsole({
   const [buyRes, setBuyRes] = useState<any>(null);
   const [buyErr, setBuyErr] = useState('');
 
-  const [thinkState, setThinkState] = useState<'idle' | 'thinking' | 'done' | 'error'>('idle');
-  const [thought, setThought] = useState<any>(null);
-  const [thinkErr, setThinkErr] = useState('');
+  // Skill in Action: the agent runs a skill it owns, then 0G Compute decides.
+  const [owned, setOwned] = useState<SkillListing[]>([]);
+  const [playSkillId, setPlaySkillId] = useState<number | ''>('');
+  const [playState, setPlayState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [playRes, setPlayRes] = useState<any>(null);
+  const [playErr, setPlayErr] = useState('');
+
+  // Load the skills this agent owns (on-chain) so it can run them.
+  useEffect(() => {
+    if (!agent) { setOwned([]); return; }
+    let cancelled = false;
+    fetch(`/api/skills/owned?address=${agent.agentAddress}`)
+      .then(r => r.json())
+      .then(d => { if (!cancelled) setOwned(d.skills ?? []); })
+      .catch(() => { if (!cancelled) setOwned([]); });
+    return () => { cancelled = true; };
+  }, [agent, buyRes]);
 
   const cheapest = useMemo(() => (skills.length ? Math.min(...skills.map(s => s.price)) : 0.01), [skills]);
   // Need the cheapest skill price + a little gas headroom to act.
@@ -73,30 +87,20 @@ export function AgentConsole({
     }
   }
 
-  async function handleThink() {
-    if (!agent) return;
-    setThinkState('thinking'); setThinkErr(''); setThought(null);
+  async function handlePlay() {
+    if (!agent || playSkillId === '') return;
+    setPlayState('running'); setPlayErr(''); setPlayRes(null);
     try {
-      const res = await fetch('/api/llm/x402', {
+      const res = await fetch('/api/agent/play', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agentAddress: agent.agentAddress,
-          agentName: agent.agentName,
-          gameId: 'rps',
-          state: { round: 3, note: 'Opponent has played Rock twice in a row.' },
-          history: [
-            { turnNumber: 1, p1Move: 'R', p2Move: 'R' },
-            { turnNumber: 2, p1Move: 'R', p2Move: 'R' },
-          ],
-          skillMove: 'R',
-        }),
+        body: JSON.stringify({ agentAddress: agent.agentAddress, skillId: playSkillId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Inference failed');
-      setThought(data); setThinkState('done');
+      if (!res.ok) throw new Error(data.error || 'Skill run failed');
+      setPlayRes(data); setPlayState('done');
     } catch (e: any) {
-      setThinkErr(e.message); setThinkState('error');
+      setPlayErr(e.message); setPlayState('error');
     }
   }
 
@@ -215,48 +219,69 @@ export function AgentConsole({
           )}
         </div>
 
-        {/* ── 0G Compute brain ── */}
+        {/* ── Skill in Action: run an owned skill + 0G Compute decides ── */}
         <div className="punk-card punk-card-blue p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <Brain size={18} className="text-punkBlue" />
-            <h3 className="font-heading text-sm uppercase tracking-widest text-inkBlack">0G Compute Brain</h3>
+            <Zap size={18} className="text-punkBlue" />
+            <h3 className="font-heading text-sm uppercase tracking-widest text-inkBlack">Skill in Action</h3>
           </div>
           <p className="text-streetGray text-xs font-mono leading-relaxed">
-            The agent reasons over a game scenario using <span className="text-punkBlue">verifiable 0G Compute</span> inference.
+            The agent <span className="text-punkBlue">runs a skill it owns</span> in a secure sandbox, then reasons on
+            verifiable 0G Compute to follow or override it.
           </p>
 
-          <div className="bg-bgDark border border-[rgba(96,165,250,0.25)] rounded-lg p-3 font-mono text-[10px] text-streetGray leading-relaxed">
-            <span className="text-streetGray/70">scenario:</span> Rock-Paper-Scissors, opponent played Rock twice. Skill suggests Rock.
-          </div>
+          <select
+            value={playSkillId}
+            onChange={e => setPlaySkillId(e.target.value === '' ? '' : Number(e.target.value))}
+            className="w-full bg-bgDark border border-[rgba(96,165,250,0.3)] rounded-lg font-mono text-sm text-inkBlack px-3 py-2 focus:outline-none focus:border-punkBlue"
+          >
+            <option value="">
+              {owned.length ? 'Select an owned skill to run…' : 'Agent owns no skills yet — buy one first'}
+            </option>
+            {owned.map(s => (
+              <option key={s.id} value={s.id}>#{s.id} · {s.name}</option>
+            ))}
+          </select>
 
           <button
-            onClick={handleThink}
-            disabled={thinkState === 'thinking'}
-            className="punk-btn bg-punkBlue text-white w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+            onClick={handlePlay}
+            disabled={playSkillId === '' || playState === 'running'}
+            className="punk-btn bg-punkBlue text-white w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {thinkState === 'thinking'
-              ? (<><Loader2 size={14} className="animate-spin mr-2" /> Thinking on 0G…</>)
-              : 'Ask the agent to reason'}
+            {playState === 'running'
+              ? (<><Loader2 size={14} className="animate-spin mr-2" /> Running skill + reasoning on 0G…</>)
+              : 'Run skill'}
           </button>
 
-          {thinkState === 'done' && thought && (
+          {playState === 'done' && playRes && (
             <div className="p-3 rounded-lg bg-punkBlue/10 border border-punkBlue/30 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">Decision</span>
-                <span className="font-heading text-lg text-punkBlue uppercase">{String(thought.move)}</span>
+              <p className="font-mono text-[10px] text-streetGray leading-relaxed">{playRes.scenario}</p>
+
+              <div className="flex items-center gap-2">
+                <Terminal size={12} className="text-streetGray shrink-0" />
+                <span className="font-mono text-[10px] text-streetGray">Skill computed:</span>
+                <span className="font-heading text-sm text-violetBright uppercase">{String(playRes.skillMove)}</span>
               </div>
-              <p className="text-inkBlack text-xs font-mono leading-relaxed">{thought.reasoning}</p>
+
+              <div className="flex items-center justify-between pt-2 border-t border-borderSoft">
+                <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">
+                  Agent decided {playRes.overridden ? '(overrode skill)' : '(followed skill)'}
+                </span>
+                <span className="font-heading text-lg text-punkBlue uppercase">{String(playRes.finalMove)}</span>
+              </div>
+              {playRes.reasoning && (
+                <p className="text-inkBlack text-xs font-mono leading-relaxed">{playRes.reasoning}</p>
+              )}
               <div className="flex items-center gap-2 pt-1 border-t border-borderSoft">
-                <ShieldCheck size={12} className={thought.verified ? 'text-punkGreen' : 'text-streetGray'} />
+                <ShieldCheck size={12} className={playRes.verified ? 'text-punkGreen' : 'text-streetGray'} />
                 <span className="font-mono text-[9px] text-streetGray uppercase tracking-widest">
-                  0G Compute{thought.verified ? ' · TEE-verified' : ''}
-                  {thought.provider && thought.provider !== 'router' ? ` · ${String(thought.provider).slice(0, 8)}…` : ''}
+                  sandbox + 0G Compute{playRes.verified ? ' · TEE-verified' : ''}
                 </span>
               </div>
             </div>
           )}
-          {thinkState === 'error' && (
-            <p className="text-punkRed text-xs font-mono">{thinkErr}</p>
+          {playState === 'error' && (
+            <p className="text-punkRed text-xs font-mono">{playErr}</p>
           )}
         </div>
       </div>

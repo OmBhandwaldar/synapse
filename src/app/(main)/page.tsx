@@ -1,169 +1,74 @@
 import { Button } from "@/components/ui/Button";
-import Link from "next/link";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import { MatchCard } from "@/components/MatchCard";
-import { fetchOpenMatches } from "@/lib/AgentRegistryClient";
+import { fetchAllSkills } from "@/lib/SkillMarketplaceClient";
 import { createClient } from "@supabase/supabase-js";
-import algosdk from "algosdk";
+import { Boxes, Database, Cpu, Bot, ShoppingCart, Sparkles } from "lucide-react";
 
-const BotIcon = ({ color = "punkPink" }: { color?: string }) => (
-  <div className={`w-12 h-12 rounded-xl bg-${color}/20 border-2 border-inkBlack flex items-center justify-center`}>
-    <svg viewBox="0 0 24 24" className="w-7 h-7 text-inkBlack" fill="none" stroke="currentColor" strokeWidth="2.5">
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <circle cx="12" cy="5" r="2" />
-      <path d="M12 7v4" />
-      <circle cx="8.5" cy="16" r="1" fill="currentColor" />
-      <circle cx="15.5" cy="16" r="1" fill="currentColor" />
-    </svg>
-  </div>
-);
+// ─── Live 0G stats (real, read from the contract + Supabase) ─────────────────
+async function getStats() {
+  let skillsListed = 0;
+  let skillsSold = 0;
+  let volume = 0;
+  let agentsDeployed = 0;
+  let latest: { id: number; name: string; skillType: string; price: number }[] = [];
 
-async function getMatchHistory() {
   try {
-    const rawMatches = await fetchOpenMatches();
-    const settledMatches = rawMatches.filter(m => m.status === 2);
-
-    // Query Supabase for agent names to resolve addresses to names
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const agentNameMap: Record<string, string> = {};
-
-    if (supabaseUrl && supabaseKey) {
-      const supabase = createClient(supabaseUrl, supabaseKey);
-      const { data: dbAgents } = await supabase
-        .from('agents')
-        .select('agent_address, agent_name');
-      
-      if (dbAgents) {
-        dbAgents.forEach((a: any) => {
-          agentNameMap[a.agent_address.toLowerCase()] = a.agent_name;
-        });
-      }
-    }
-
-    return settledMatches.map(m => {
-      const nameA = agentNameMap[m.agentA.toLowerCase()] || `${m.agentA.slice(0, 6)}...${m.agentA.slice(-4)}`;
-      const nameB = m.agentB ? (agentNameMap[m.agentB.toLowerCase()] || `${m.agentB.slice(0, 6)}...${m.agentB.slice(-4)}`) : "Open Slot";
-      
-      let winnerName = "";
-      if (m.winner) {
-        winnerName = agentNameMap[m.winner.toLowerCase()] || `${m.winner.slice(0, 6)}...${m.winner.slice(-4)}`;
-      }
-
-      const gameLabels: Record<string, string> = { rps: 'Rock Paper Scissors', tictactoe: 'Tic-Tac-Toe', nim: 'Nim' };
-
-      return {
-        matchId: m.matchId,
-        gameType: gameLabels[m.gameId] || m.gameId,
-        stake: `${m.stakeAmount} ALGO`,
-        p1: { name: nameA, winRate: "ELO" },
-        p2: { name: nameB, winRate: "ELO" },
-        winnerName: m.winner ? winnerName : undefined,
-      };
-    });
-  } catch (err) {
-    console.error("Failed to load match history:", err);
-    return [];
-  }
-}
-
-async function getTopAgents() {
-  try {
-    const appId = parseInt(process.env.NEXT_PUBLIC_AGENT_REGISTRY_APP_ID || '0', 10);
-    if (!appId) {
-      throw new Error('NEXT_PUBLIC_AGENT_REGISTRY_APP_ID missing');
-    }
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase configuration missing');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const { data: dbAgents, error: dbError } = await supabase
-      .from('agents')
-      .select('agent_address, agent_name');
-
-    if (dbError || !dbAgents || dbAgents.length === 0) {
-      throw new Error(dbError?.message || 'No agents in database');
-    }
-
-    const ALGOD_SERVER = 'https://testnet-api.algonode.cloud';
-    const ALGOD_TOKEN = '';
-    const ALGOD_PORT = '';
-    const algod = new algosdk.Algodv2(ALGOD_TOKEN, ALGOD_SERVER, ALGOD_PORT);
-    const prefix = new TextEncoder().encode('agt_');
-
-    const leaderboardPromises = dbAgents.map(async (agent) => {
-      try {
-        const pub = algosdk.decodeAddress(agent.agent_address).publicKey;
-        const boxName = new Uint8Array([...prefix, ...pub]);
-        const boxResponse = await algod.getApplicationBoxByName(appId, boxName).do();
-        
-        // Parse AgentRecord (160 bytes)
-        const data = new DataView(boxResponse.value.buffer);
-        let offset = 64; // Skip owner(32) and agentAddress(32)
-        
-        const nameBytes = boxResponse.value.slice(offset, offset + 32); offset += 32;
-        const name = new TextDecoder().decode(nameBytes).replace(/\0/g, '').trim() || agent.agent_name;
-        
-        const neuronsLevel = Number(data.getBigUint64(offset)); offset += 8;
-        offset += 24; // Skip equippedSkill1, equippedSkill2, equippedSkill3 (24 bytes)
-        
-        const matchWins = Number(data.getBigUint64(offset)); offset += 8;
-        const matchLosses = Number(data.getBigUint64(offset));
-        
-        return {
-          name: name,
-          address: agent.agent_address,
-          neuronsLevel: neuronsLevel,
-          wins: matchWins,
-          losses: matchLosses,
-        };
-      } catch (err) {
-        // Fallback for agents not registered on-chain yet
-        return {
-          name: agent.agent_name,
-          address: agent.agent_address,
-          neuronsLevel: 0,
-          wins: 0,
-          losses: 0,
-        };
-      }
-    });
-
-    const leaderboard = await Promise.all(leaderboardPromises);
-    
-    // Sort by neuronsLevel (acting as points/ELO)
-    leaderboard.sort((a, b) => b.neuronsLevel - a.neuronsLevel);
-
-    // Map to the structure we need for the UI
-    const accStyles = ["punk-card-pink", "punk-card-purple", "punk-card-blue"];
-    return leaderboard.slice(0, 3).map((agent, index) => ({
-      rank: index + 1,
-      name: agent.name,
-      elo: agent.neuronsLevel,
-      accent: accStyles[index] || "punk-card-blue",
+    const skills = await fetchAllSkills();
+    skillsListed = skills.length;
+    skillsSold = skills.reduce((a, s) => a + s.soldCount, 0);
+    volume = skills.reduce((a, s) => a + s.soldCount * s.price, 0);
+    latest = skills.slice(-4).reverse().map((s) => ({
+      id: s.id, name: s.name, skillType: s.skillType, price: s.price,
     }));
-  } catch (err) {
-    console.log("⚠️ Supabase/Algod offline. Using mock data fallback for homepage ranked agents.");
-    // Return mock data fallback
-    return [
-      { rank: 1, name: "AgentX00_Bot", elo: 2450, accent: "punk-card-pink" },
-      { rank: 2, name: "Alpha_NILL", elo: 2310, accent: "punk-card-purple" },
-      { rank: 3, name: "BIR_OP", elo: 2280, accent: "punk-card-blue" },
-    ];
-  }
+  } catch { /* contract unreachable — show zeros */ }
+
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (url && key && !url.includes("placeholder")) {
+      const supabase = createClient(url, key);
+      const { count } = await supabase.from("agents").select("*", { count: "exact", head: true });
+      agentsDeployed = count ?? 0;
+    }
+  } catch { /* supabase unreachable */ }
+
+  return { skillsListed, skillsSold, volume, agentsDeployed, latest };
 }
+
+const PILLARS = [
+  {
+    icon: Boxes,
+    title: "0G Chain",
+    desc: "Agents own wallets and buy skills on-chain. Ownership and the 95/5 marketplace split live in a Solidity contract on 0G.",
+    accent: "punk-card-purple",
+  },
+  {
+    icon: Database,
+    title: "0G Storage",
+    desc: "Skill modules are AES-256 encrypted and stored on 0G Storage, addressed by root hash and unlocked only after an on-chain purchase.",
+    accent: "punk-card-blue",
+  },
+  {
+    icon: Cpu,
+    title: "0G Compute",
+    desc: "Agents reason with verifiable inference — they run their skills in a sandbox and decide moves on 0G Compute.",
+    accent: "punk-card-green",
+  },
+];
 
 export default async function Home() {
-  const matchHistory = await getMatchHistory();
-  const topAgents = await getTopAgents();
+  const stats = await getStats();
+
+  const statCards = [
+    { label: "Agents Deployed", value: stats.agentsDeployed, icon: Bot, color: "text-violetBright" },
+    { label: "Skills Listed", value: stats.skillsListed, icon: Sparkles, color: "text-punkBlue" },
+    { label: "Skills Sold", value: stats.skillsSold, icon: ShoppingCart, color: "text-punkGreen" },
+    { label: "Volume (0G)", value: stats.volume.toFixed(2), icon: Boxes, color: "text-punkPink" },
+  ];
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] text-center space-y-16 pb-16">
-      
+
       {/* Decorative pixel background accents */}
       <div className="fixed top-32 left-6 jp-accent font-pixel text-[64px] leading-tight -z-10 select-none hidden lg:block" style={{ writingMode: 'vertical-rl' }}>
         ZERO
@@ -193,7 +98,7 @@ export default async function Home() {
 
         {/* Tech stat line */}
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-[11px] md:text-xs uppercase tracking-widest text-streetGray pt-1">
-          <span><span className="text-punkGreen font-semibold">1</span> live contract</span>
+          <span><span className="text-punkGreen font-semibold">live</span> on 0G Galileo</span>
           <span className="text-violet/60">·</span>
           <span>0G storage + compute</span>
           <span className="text-violet/60">·</span>
@@ -213,83 +118,59 @@ export default async function Home() {
         </Button>
       </div>
 
-      {/* Top 3 Bots */}
-      <div className="w-full max-w-5xl mx-auto mt-16">
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <p className="font-heading tracking-widest text-sm text-inkBlack text-center uppercase">Top Ranked Agents</p>
-          {/* <span className="font-jp text-sm text-punkPink opacity-60 font-bold">トップ</span> */}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
-          {topAgents.map((bot) => (
-            <SpotlightCard key={bot.rank} className={`p-5 flex items-center gap-4 ${bot.accent}`}>
-              <BotIcon />
-              <div className="text-left flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className={`font-mono text-sm font-bold ${bot.rank === 1 ? 'text-punkPink' : 'text-streetGray'}`}>#{bot.rank}</span>
-                  <span className="text-inkBlack font-body font-bold truncate text-lg">{bot.name}</span>
-                </div>
-                <p className="text-streetGray text-xs uppercase tracking-wider mt-0.5 font-mono">{bot.elo} Elo</p>
-              </div>
-            </SpotlightCard>
+      {/* Live 0G stats */}
+      <div className="w-full max-w-5xl mx-auto">
+        <p className="font-mono text-[10px] text-streetGray uppercase tracking-[0.3em] mb-5">Live on 0G</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {statCards.map((s) => (
+            <div key={s.label} className="punk-card p-5 text-center">
+              <s.icon size={20} className={`mx-auto mb-2 ${s.color}`} />
+              <p className={`font-heading text-3xl ${s.color}`}>{s.value}</p>
+              <p className="font-mono text-[10px] text-streetGray uppercase tracking-widest mt-1">{s.label}</p>
+            </div>
           ))}
-
         </div>
       </div>
 
-      {/* Match History Section */}
-      <div className="w-full mt-16">
-        <div className="flex items-center justify-between mb-8 pb-4 border-b-4 border-inkBlack">
-          <h2 className="text-3xl text-inkBlack font-heading tracking-widest uppercase flex items-center gap-3">
-            <span className="w-3 h-3 rounded-full bg-punkGreen" />
-            Match History
-            {/* <span className="font-jp text-lg text-punkPink opacity-50 font-bold">履歴</span> */}
-          </h2>
-          <Link href="/arena/lobby" className="text-streetGray hover:text-punkPink text-sm font-body font-bold tracking-widest transition-colors uppercase">
-            Match Lobby →
-          </Link>
+      {/* The three 0G pillars */}
+      <div className="w-full max-w-5xl mx-auto">
+        <div className="punk-divider w-40 mx-auto rounded-full mb-8" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          {PILLARS.map((p) => (
+            <SpotlightCard key={p.title} className={`p-7 ${p.accent}`}>
+              <p.icon size={28} className="text-violetBright mb-4" />
+              <h3 className="text-lg font-heading text-inkBlack tracking-widest uppercase mb-3">{p.title}</h3>
+              <p className="text-streetGray text-sm leading-relaxed font-body">{p.desc}</p>
+            </SpotlightCard>
+          ))}
         </div>
+      </div>
 
-        {matchHistory.length === 0 ? (
-          <div className="punk-card bg-white p-8 text-center border-3 border-inkBlack">
-            <div className="text-3xl mb-2">🏜️</div>
-            <p className="font-heading text-lg uppercase text-inkBlack">No on-chain matches recorded yet</p>
-            <p className="font-mono text-xs text-streetGray">Completed games will appear here</p>
+      {/* Latest skills on the marketplace */}
+      {stats.latest.length > 0 && (
+        <div className="w-full max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <p className="font-heading tracking-widest text-sm text-inkBlack uppercase">Latest Skills</p>
+            <a href="/marketplace" className="text-streetGray hover:text-violetBright text-xs font-mono uppercase tracking-widest transition-colors">
+              View marketplace →
+            </a>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
-            {matchHistory.slice(-6).reverse().map((match) => (
-              <MatchCard 
-                key={match.matchId}
-                status="SETTLED"
-                gameType={match.gameType}
-                stake={match.stake}
-                p1={match.p1}
-                p2={match.p2}
-                winnerName={match.winnerName}
-              />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+            {stats.latest.map((s) => (
+              <div key={s.id} className="punk-card p-4 flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-violet/15 border border-[rgba(139,92,246,0.4)] shrink-0">
+                  <Sparkles size={16} className="text-violetBright" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-heading text-sm text-inkBlack uppercase tracking-tight truncate">{s.name}</p>
+                  <p className="font-mono text-[10px] text-streetGray">{s.skillType} · #{s.id}</p>
+                </div>
+                <span className="font-mono text-sm text-punkGreen font-bold shrink-0">{s.price} 0G</span>
+              </div>
             ))}
           </div>
-        )}
-      </div>
-
-      {/* Feature Grid */}
-      <div className="w-full mt-16 pt-8">
-        <div className="punk-divider mb-8" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          {[
-            { title: "Deterministic Combat", desc: "Upload scripts. Agents fight server-side in perfectly verifiable matches.", icon: "⚔️", accent: "punk-card-pink" },
-            { title: "Algorand Settlement", desc: "Every agent has a secure testnet wallet. Matches and predictions settled on-chain.", icon: "⛓️", accent: "punk-card-purple" },
-            { title: "x402 Marketplace", desc: "Agents buy and sell logical capabilities dynamically. Evolvable AI via open markets.", icon: "🏪", accent: "punk-card-green" },
-          ].map((feature) => (
-            <SpotlightCard key={feature.title} className={`p-8 ${feature.accent}`}>
-              <div className="text-4xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-heading text-inkBlack tracking-widest uppercase mb-3">{feature.title}</h3>
-              <p className="text-streetGray text-sm leading-relaxed font-body">{feature.desc}</p>
-            </SpotlightCard>
-          ))}
         </div>
-      </div>
+      )}
 
     </div>
   );
