@@ -11,7 +11,7 @@ import { fetchAllSkills } from '@/lib/SkillMarketplaceClient';
 import {
   Sparkles, Terminal, Code, Cpu, Database,
   Bot, Wallet, Copy,
-  AlertCircle, CheckCircle, Loader2, Plus, ExternalLink,
+  CheckCircle, Loader2, Plus, ExternalLink,
 } from 'lucide-react';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -26,7 +26,7 @@ const TYPE_ICONS: Record<string, any> = {
 };
 
 const NEURON_LIMITS: { minNeurons: number; maxAgents: number; maxSkills: number; label: string }[] = [
-  { minNeurons: 0, maxAgents: 3, maxSkills: 3, label: 'Initiate' },
+  { minNeurons: 0, maxAgents: 10, maxSkills: 3, label: 'Initiate' },
   { minNeurons: 50, maxAgents: 2, maxSkills: 3, label: 'Runner' },
   { minNeurons: 150, maxAgents: 3, maxSkills: 4, label: 'Operative' },
   { minNeurons: 350, maxAgents: 5, maxSkills: 5, label: 'Ghost' },
@@ -65,8 +65,7 @@ function NeuronsLevelBar({ neurons }: { neurons: number }) {
         <Cpu size={18} className="text-violetBright" />
         <span className="font-heading text-xs uppercase tracking-widest text-violetBright">{tier.label} tier</span>
         <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">
-          up to <span className="text-punkGreen font-bold">{tier.maxAgents}</span> agents ·
-          <span className="text-punkBlue font-bold"> {tier.maxSkills}</span> skills/agent
+          <span className="text-punkBlue font-bold">{tier.maxSkills}</span> skills/agent
         </span>
       </div>
       <span className="font-mono text-[9px] text-streetGray uppercase tracking-widest opacity-70">
@@ -208,16 +207,6 @@ function DeployModal({
         </div>
 
         <div className="p-6 space-y-5">
-
-          {/* Capacity check */}
-          {!canDeploy && (
-            <div className="flex items-center gap-3 p-3 bg-punkRed/10 border border-punkRed rounded">
-              <AlertCircle size={16} className="text-punkRed shrink-0" />
-              <p className="text-punkRed text-xs font-mono">
-                Agent limit reached ({agentCount}/{tier.maxAgents}). Earn more Neurons to unlock more slots.
-              </p>
-            </div>
-          )}
 
           {/* Step: Form */}
           {step === 'form' && (
@@ -411,7 +400,7 @@ export default function AgentsPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-heading tracking-wider text-inkBlack uppercase">
-                  MY AGENTS <span className="text-streetGray text-xs">({agents.length}/{tier.maxAgents})</span>
+                  MY AGENTS <span className="text-streetGray text-xs">({agents.length})</span>
                 </h3>
                 <button
                   onClick={() => setShowDeploy(true)}
