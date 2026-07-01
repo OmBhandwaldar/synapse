@@ -224,6 +224,10 @@ export function AgentConsole({
           <div className="flex items-center gap-2">
             <Zap size={18} className="text-punkBlue" />
             <h3 className="font-heading text-sm uppercase tracking-widest text-inkBlack">Skill in Action</h3>
+            <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded bg-punkGreen/12 border border-punkGreen/40">
+              <ShieldCheck size={10} className="text-punkGreen" />
+              <span className="font-mono text-[8px] text-punkGreen uppercase tracking-widest">TEE-verified</span>
+            </span>
           </div>
           <p className="text-streetGray text-xs font-mono leading-relaxed">
             The agent <span className="text-punkBlue">runs a skill it owns</span> in a secure sandbox, then reasons on
@@ -254,41 +258,46 @@ export function AgentConsole({
           </button>
 
           {playState === 'done' && playRes && (
-            <div className="p-3 rounded-lg bg-punkBlue/10 border border-punkBlue/30 space-y-2">
-              <p className="font-mono text-[10px] text-streetGray leading-relaxed">{playRes.scenario}</p>
-
-              <div className="flex items-center gap-2">
-                <Terminal size={12} className="text-streetGray shrink-0" />
-                <span className="font-mono text-[10px] text-streetGray">Skill computed:</span>
-                <span className="font-heading text-sm text-violetBright uppercase">{String(playRes.skillMove)}</span>
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t border-borderSoft">
-                <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">
-                  Agent decided {playRes.overridden ? '(overrode skill)' : '(followed skill)'}
-                </span>
-                <span className="font-heading text-lg text-punkBlue uppercase">{String(playRes.finalMove)}</span>
-              </div>
-              {playRes.reasoning && (
-                <p className="text-inkBlack text-xs font-mono leading-relaxed">{playRes.reasoning}</p>
-              )}
-              {/* Attestation receipt */}
-              <div className="pt-2 border-t border-borderSoft space-y-1.5">
-                {playRes.verified ? (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-punkGreen/15 border border-punkGreen/50">
-                    <ShieldCheck size={13} className="text-punkGreen" />
-                    <span className="font-heading text-[11px] text-punkGreen uppercase tracking-widest">TEE-attested on 0G Compute</span>
+            <div className="space-y-3">
+              {/* ── THE SEAL (first, prominent) ── */}
+              {playRes.verified ? (
+                <div className="rounded-xl bg-punkGreen/12 border border-punkGreen/50 p-3 text-center shadow-[0_0_20px_rgba(74,222,128,0.18)]">
+                  <div className="flex items-center justify-center gap-2">
+                    <ShieldCheck size={18} className="text-punkGreen" />
+                    <span className="font-heading text-sm text-punkGreen uppercase tracking-widest text-glow">TEE-Attested on 0G Compute</span>
                   </div>
-                ) : (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-streetGray/10 border border-borderSoft">
-                    <ShieldCheck size={13} className="text-streetGray" />
-                    <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">sandbox + 0G Compute</span>
-                  </div>
-                )}
-                {playRes.provider && playRes.provider !== 'router' && (
-                  <p className="font-mono text-[9px] text-streetGray">
-                    provider <span className="text-violetBright">{String(playRes.provider).slice(0, 10)}…{String(playRes.provider).slice(-4)}</span> · verified inference receipt
+                  <p className="font-mono text-[9px] text-streetGray mt-1">
+                    verified inference receipt · provider{' '}
+                    <span className="text-violetBright">{String(playRes.provider).slice(0, 10)}…{String(playRes.provider).slice(-4)}</span>
                   </p>
+                </div>
+              ) : (
+                <div className="rounded-xl bg-streetGray/10 border border-borderSoft p-3 text-center">
+                  <div className="flex items-center justify-center gap-2">
+                    <ShieldCheck size={16} className="text-streetGray" />
+                    <span className="font-mono text-xs text-streetGray uppercase tracking-widest">sandbox + 0G Compute</span>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Decision (the payoff) ── */}
+              <div className="rounded-lg bg-punkBlue/10 border border-punkBlue/30 p-3 flex items-center justify-between">
+                <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">
+                  Agent's decision {playRes.overridden ? '· overrode skill' : '· followed skill'}
+                </span>
+                <span className="font-heading text-2xl text-punkBlue uppercase">{String(playRes.finalMove)}</span>
+              </div>
+
+              {/* ── Details (below) ── */}
+              <div className="rounded-lg bg-bgDark/60 border border-borderSoft p-3 space-y-2">
+                <p className="font-mono text-[10px] text-streetGray leading-relaxed">{playRes.scenario}</p>
+                <div className="flex items-center gap-2">
+                  <Terminal size={12} className="text-streetGray shrink-0" />
+                  <span className="font-mono text-[10px] text-streetGray">Skill computed:</span>
+                  <span className="font-heading text-sm text-violetBright uppercase">{String(playRes.skillMove)}</span>
+                </div>
+                {playRes.reasoning && (
+                  <p className="text-inkBlack text-xs font-mono leading-relaxed pt-1 border-t border-borderSoft">{playRes.reasoning}</p>
                 )}
               </div>
             </div>
