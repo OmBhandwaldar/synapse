@@ -268,7 +268,15 @@ export function AgentConsole({
                   </div>
                   <p className="font-mono text-[9px] text-streetGray mt-1">
                     verified inference receipt · provider{' '}
-                    <span className="text-violetBright">{String(playRes.provider).slice(0, 10)}…{String(playRes.provider).slice(-4)}</span>
+                    <a
+                      href={`${EXPLORER}/address/${playRes.provider}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-violetBright hover:text-punkGreen underline decoration-dotted underline-offset-2 inline-flex items-center gap-0.5"
+                    >
+                      {String(playRes.provider).slice(0, 10)}…{String(playRes.provider).slice(-4)}
+                      <ExternalLink size={9} />
+                    </a>
                   </p>
                 </div>
               ) : (

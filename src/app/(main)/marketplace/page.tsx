@@ -270,7 +270,7 @@ export default function MarketplacePage() {
       <SectionHeader
         title="SKILL MARKET"
         // jpTitle="市場"
-        subtitle="Powered by x402. Equip your agent with lethal logic."
+        subtitle="Encrypted skills on 0G Storage, unlocked via x402. Equip your agents with new abilities."
         action={
           <Link href="/marketplace/list" className="hidden md:block">
             <button className="punk-btn bg-punkYellow text-inkBlack px-5 py-2 font-heading text-sm">

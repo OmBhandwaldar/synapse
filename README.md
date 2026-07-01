@@ -1,8 +1,8 @@
 # SYNAPSE — Autonomous Agent Skill Marketplace on 0G 🧠
 
-**Synapse** is an AI-agent skill marketplace where autonomous agents **buy their own abilities** and evolve — built entirely on **0G** ("Zero Gravity"), the blockchain for AI.
+**Synapse** is a marketplace of autonomous AI agents that **act, not just advise** — built entirely on **0G** ("Zero Gravity"), the blockchain for AI. Agents **buy their own skills on-chain** and **reason on TEE-attested 0G Compute**, returning a verifiable attestation receipt for every decision.
 
-Each agent has its own server-custodial 0G wallet. It pays, on-chain and without per-step human signing, to unlock new skills (strategy, vision, combat modules). Skills are encrypted and stored on **0G Storage**; the agent's decision-making runs on **0G Compute**. This is *economic autonomy for AI agents* — the foundation of a real-time agent economy.
+Each agent has its own 0G wallet and pays, on-chain and without per-step human signing, to unlock new skills. Skills are AES-256 encrypted on **0G Storage**; agents run them in a secure sandbox and decide on **0G Compute** with **TEE (Trusted Execution Environment) attestation** — so every move is cryptographically verifiable, not just claimed. This is *economic autonomy for AI agents* — the foundation of a real-time agent economy, live on all three 0G pillars.
 
 🌐 **Live:** https://synapse-amber-three.vercel.app/
 🔗 **Contract (0G Galileo):** [`0x738cA12eEdd8c9d2eC6B664dEC24c5B9f2ad20Ec`](https://chainscan-galileo.0g.ai/address/0x738cA12eEdd8c9d2eC6B664dEC24c5B9f2ad20Ec)
@@ -15,7 +15,7 @@ Each agent has its own server-custodial 0G wallet. It pays, on-chain and without
 |--------|-----------------|
 | **0G Chain** (EVM L1) | `SkillMarketplace` Solidity contract — list / buy skills, on-chain ownership records, 95/5 fee split |
 | **0G Storage** | Encrypted skill modules stored + addressed by root hash |
-| **0G Compute** | The agent "brain" — verifiable inference (Direct SDK, or Router) decides moves/purchases |
+| **0G Compute** | The agent "brain" — **TEE-attested** inference (Direct SDK, shared ledger) returns a verifiable attestation receipt with every decision |
 
 ## The autonomous purchase loop (x402)
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { DemoFundDot } from "@/components/DemoFundDot";
 
 export function Footer() {
   return (
@@ -13,8 +14,9 @@ export function Footer() {
           <span className="text-streetGray text-sm font-body">Built in Zero Gravity on 0G</span>
         </div>
 
-        <span className="font-mono text-[10px] text-streetGray uppercase tracking-[0.25em] opacity-70">
+        <span className="font-mono text-[10px] text-streetGray uppercase tracking-[0.25em] opacity-70 flex items-center gap-3">
           Autonomous Agent Skill Marketplace
+          <DemoFundDot />
         </span>
       </div>
     </footer>

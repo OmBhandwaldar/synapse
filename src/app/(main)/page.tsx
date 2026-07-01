@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/Button";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { fetchAllSkills } from "@/lib/SkillMarketplaceClient";
 import { createClient } from "@supabase/supabase-js";
-import { Boxes, Database, Cpu, Bot, ShoppingCart, Sparkles } from "lucide-react";
+import { Boxes, Database, Cpu, Bot, ShoppingCart, Sparkles, ShieldCheck, Wallet, Zap, ChevronRight } from "lucide-react";
 
 // ─── Live 0G stats (real, read from the contract + Supabase) ─────────────────
 async function getStats() {
@@ -41,18 +41,21 @@ const PILLARS = [
     title: "0G Chain",
     desc: "Agents own wallets and buy skills on-chain. Ownership and the 95/5 marketplace split live in a Solidity contract on 0G.",
     accent: "punk-card-purple",
+    iconColor: "text-violetBright",
   },
   {
     icon: Database,
     title: "0G Storage",
     desc: "Skill modules are AES-256 encrypted and stored on 0G Storage, addressed by root hash and unlocked only after an on-chain purchase.",
     accent: "punk-card-blue",
+    iconColor: "text-punkBlue",
   },
   {
     icon: Cpu,
     title: "0G Compute",
-    desc: "Agents reason with verifiable inference — they run their skills in a sandbox and decide moves on 0G Compute.",
+    desc: "Agents reason on TEE-attested 0G Compute — every decision returns a cryptographic attestation receipt you can verify.",
     accent: "punk-card-green",
+    iconColor: "text-punkGreen",
   },
 ];
 
@@ -92,9 +95,17 @@ export default async function Home() {
         </h1>
 
         <p className="text-lg md:text-2xl text-streetGray max-w-2xl font-body mx-auto leading-relaxed">
-          An autonomous AI-agent skill marketplace, where agents buy their own abilities,
-          powered by infinite storage and verifiable compute on 0G.
+          Autonomous AI agents that <span className="text-inkBlack">buy their own skills</span> on-chain and
+          reason on <span className="text-punkGreen">TEE-verified</span> 0G Compute. Agents that act — not just advise.
         </p>
+
+        {/* Verifiability seal — signal the differentiator on the landing page */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-punkGreen/12 border border-punkGreen/40">
+          <ShieldCheck size={14} className="text-punkGreen" />
+          <span className="font-mono text-[10px] md:text-[11px] text-punkGreen uppercase tracking-widest">
+            Every agent decision is TEE-attested on 0G Compute
+          </span>
+        </div>
 
         {/* Tech stat line */}
         <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-mono text-[11px] md:text-xs uppercase tracking-widest text-streetGray pt-1">
@@ -118,15 +129,44 @@ export default async function Home() {
         </Button>
       </div>
 
-      {/* Live 0G stats */}
-      <div className="w-full max-w-5xl mx-auto">
-        <p className="font-mono text-[10px] text-streetGray uppercase tracking-[0.3em] mb-5">Live on 0G</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Live 0G stats — airy borderless strip */}
+      <div className="w-full max-w-4xl mx-auto">
+        <p className="font-mono text-[10px] text-streetGray uppercase tracking-[0.3em] mb-6">Live on 0G</p>
+        <div className="flex flex-wrap items-center justify-center divide-x divide-[rgba(139,92,246,0.18)]">
           {statCards.map((s) => (
-            <div key={s.label} className="punk-card p-5 text-center">
-              <s.icon size={20} className={`mx-auto mb-2 ${s.color}`} />
-              <p className={`font-heading text-3xl ${s.color}`}>{s.value}</p>
-              <p className="font-mono text-[10px] text-streetGray uppercase tracking-widest mt-1">{s.label}</p>
+            <div key={s.label} className="px-8 md:px-12 py-2">
+              <p className={`font-heading text-4xl md:text-5xl ${s.color} text-glow`}>{s.value}</p>
+              <p className="font-mono text-[10px] text-streetGray uppercase tracking-widest mt-2">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* How it works — a connected buy -> use -> reason flow */}
+      <div className="w-full max-w-5xl mx-auto">
+        <p className="font-mono text-[10px] text-streetGray uppercase tracking-[0.3em] mb-6">How it works</p>
+        <div className="flex flex-col md:flex-row items-stretch gap-3 text-left">
+          {[
+            { n: "01", icon: Wallet, title: "Deploy an agent", desc: "Every agent gets its own 0G wallet. Fund it once — it transacts on its own from there." },
+            { n: "02", icon: ShoppingCart, title: "It buys skills, autonomously", desc: "The agent pays from its own wallet to unlock skills on 0G Chain — no human signature per action." },
+            { n: "03", icon: Zap, title: "It runs them + reasons", desc: "The agent executes its skills in a sandbox and decides on TEE-attested 0G Compute — with a verifiable receipt." },
+          ].map((step, i) => (
+            <div key={step.n} className="contents">
+              <div className="flex-1 rounded-2xl border border-borderSoft bg-bgCard/30 p-6 relative">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet/15 border border-[rgba(139,92,246,0.4)] font-pixel text-[10px] text-violetBright">
+                    {step.n}
+                  </span>
+                  <step.icon size={20} className="text-violetBright" />
+                </div>
+                <h3 className="text-base font-heading text-inkBlack tracking-wide uppercase mb-2">{step.title}</h3>
+                <p className="text-streetGray text-sm leading-relaxed font-body">{step.desc}</p>
+              </div>
+              {i < 2 && (
+                <div className="hidden md:flex items-center justify-center text-violet/40 shrink-0">
+                  <ChevronRight size={22} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -138,7 +178,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
           {PILLARS.map((p) => (
             <SpotlightCard key={p.title} className={`p-7 ${p.accent}`}>
-              <p.icon size={28} className="text-violetBright mb-4" />
+              <p.icon size={28} className={`${p.iconColor} mb-4`} />
               <h3 className="text-lg font-heading text-inkBlack tracking-widest uppercase mb-3">{p.title}</h3>
               <p className="text-streetGray text-sm leading-relaxed font-body">{p.desc}</p>
             </SpotlightCard>

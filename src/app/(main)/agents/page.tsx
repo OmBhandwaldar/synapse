@@ -56,39 +56,22 @@ interface AgentInfo {
 
 function NeuronsLevelBar({ neurons }: { neurons: number }) {
   const tier = getTier(neurons);
-  const nextTier = NEURON_LIMITS.find(t => t.minNeurons > neurons);
-  const progress = nextTier
-    ? ((neurons - tier.minNeurons) / (nextTier.minNeurons - tier.minNeurons)) * 100
-    : 100;
-
+  // Slim, honest status strip — no fake progress bar. Neurons progression
+  // (earned from on-chain wins) ships in a later round; we don't advertise
+  // movement that can't happen yet.
   return (
-    <div className="punk-card p-4 bg-inkBlack text-white space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Cpu size={22} className="text-violetBright" />
-          <div>
-            <p className="font-heading text-xs uppercase tracking-widest text-punkYellow">{tier.label}</p>
-            <p className="font-mono font-bold text-lg">{neurons} Neurons</p>
-          </div>
-        </div>
-        <div className="text-right text-xs font-mono text-streetGray">
-          <p>Max Agents: <span className="text-punkGreen font-bold">{tier.maxAgents}</span></p>
-          <p>Max Skills/Bot: <span className="text-punkBlue font-bold">{tier.maxSkills}</span></p>
-        </div>
+    <div className="punk-card p-3.5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+      <div className="flex items-center gap-2.5">
+        <Cpu size={18} className="text-violetBright" />
+        <span className="font-heading text-xs uppercase tracking-widest text-violetBright">{tier.label} tier</span>
+        <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">
+          up to <span className="text-punkGreen font-bold">{tier.maxAgents}</span> agents ·
+          <span className="text-punkBlue font-bold"> {tier.maxSkills}</span> skills/agent
+        </span>
       </div>
-      {nextTier && (
-        <>
-          <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-punkPink to-punkYellow rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-[9px] text-streetGray font-mono uppercase text-right">
-            {nextTier.minNeurons - neurons} neurons to {nextTier.label}
-          </p>
-        </>
-      )}
+      <span className="font-mono text-[9px] text-streetGray uppercase tracking-widest opacity-70">
+        Neurons progression · on-chain wins · coming soon
+      </span>
     </div>
   );
 }

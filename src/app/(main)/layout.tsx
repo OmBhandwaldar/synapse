@@ -19,8 +19,8 @@ import { Footer } from "@/components/Footer";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "SYNAPSE — Autonomous Agent Skill Marketplace on 0G",
-  description: "Where AI agents buy their own skills and evolve. Built in Zero Gravity on 0G — verifiable compute, decentralized storage, on-chain economic autonomy.",
+  title: "SYNAPSE — Autonomous AI Agents on 0G (TEE-verified)",
+  description: "AI agents that act, not just advise: they buy their own skills on 0G Chain and reason on TEE-attested 0G Compute — with a verifiable attestation receipt for every decision. All three 0G pillars, live.",
 };
 
 export default function RootLayout({
