@@ -1,11 +1,26 @@
-# SYNAPSE — Autonomous Agent Skill Marketplace on 0G 🧠
+# SYNAPSE - Autonomous Agent Skill Marketplace on 0G 🧠
 
 **Synapse** is a marketplace of autonomous AI agents that **act, not just advise** — built entirely on **0G** ("Zero Gravity"), the blockchain for AI. Agents **buy their own skills on-chain** and **reason on TEE-attested 0G Compute**, returning a verifiable attestation receipt for every decision.
 
-Each agent has its own 0G wallet and pays, on-chain and without per-step human signing, to unlock new skills. Skills are AES-256 encrypted on **0G Storage**; agents run them in a secure sandbox and decide on **0G Compute** with **TEE (Trusted Execution Environment) attestation** — so every move is cryptographically verifiable, not just claimed. This is *economic autonomy for AI agents* — the foundation of a real-time agent economy, live on all three 0G pillars.
+Each agent has its own 0G wallet and pays, on-chain and without per-step human signing, to unlock new skills. Skills are AES-256 encrypted on **0G Storage**; agents run them in a secure sandbox and decide on **0G Compute** with **TEE (Trusted Execution Environment) attestation** - so every move is cryptographically verifiable, not just claimed. This is *economic autonomy for AI agents* - the foundation of a real-time agent economy, live on all three 0G pillars.
 
 🌐 **Live:** https://synapse-amber-three.vercel.app/
+
 🔗 **Contract (0G Galileo):** [`0x738cA12eEdd8c9d2eC6B664dEC24c5B9f2ad20Ec`](https://chainscan-galileo.0g.ai/address/0x738cA12eEdd8c9d2eC6B664dEC24c5B9f2ad20Ec)
+
+---
+
+## Try it live (2-minute walkthrough)
+
+Everything below runs in the browser on the [live app](https://synapse-amber-three.vercel.app/).
+
+1. **Connect**: open the live app and connect **MetaMask** to the 0G Galileo testnet (the app prompts to add the network; RPC `https://evmrpc-testnet.0g.ai`, chain id `16602`).
+2. **Deploy an agent**: go to **Agents → Deploy Agent**. Synapse generates the agent its own 0G wallet. It starts empty.
+3. **Fund it**: copy the agent's address and send it a little testnet 0G from [faucet.0g.ai](https://faucet.0g.ai). Refresh — the balance appears.
+4. **Autonomous buy**: open the **Agent Console**, pick a skill, and hit *"Let agent buy autonomously"*. The agent pays `buySkill()` **from its own wallet**: no human signature. Click the tx hash to see it on [chainscan](https://chainscan-galileo.0g.ai).
+5. **Skill in action + proof**: in **Skill in Action**, select the owned skill and *Run skill*. The agent fetches it from 0G Storage, runs it in a sandbox, and reasons on **0G Compute**, returning the green **"TEE-Attested on 0G Compute ✓"** seal (`verified: true`) with the provider address.
+
+> Tip: skill purchase and inference each take a few seconds of on-chain / compute time.
 
 ---
 
@@ -13,9 +28,9 @@ Each agent has its own 0G wallet and pays, on-chain and without per-step human s
 
 | Pillar | Role in Synapse |
 |--------|-----------------|
-| **0G Chain** (EVM L1) | `SkillMarketplace` Solidity contract — list / buy skills, on-chain ownership records, 95/5 fee split |
+| **0G Chain** (EVM L1) | `SkillMarketplace` Solidity contract - list / buy skills, on-chain ownership records, 95/5 fee split |
 | **0G Storage** | Encrypted skill modules stored + addressed by root hash |
-| **0G Compute** | The agent "brain" — **TEE-attested** inference (Direct SDK, shared ledger) returns a verifiable attestation receipt with every decision |
+| **0G Compute** | The agent "brain" - **TEE-attested** inference (Direct SDK, shared ledger) returns a verifiable attestation receipt with every decision |
 
 ## The autonomous purchase loop (x402)
 
