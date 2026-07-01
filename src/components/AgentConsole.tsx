@@ -272,11 +272,24 @@ export function AgentConsole({
               {playRes.reasoning && (
                 <p className="text-inkBlack text-xs font-mono leading-relaxed">{playRes.reasoning}</p>
               )}
-              <div className="flex items-center gap-2 pt-1 border-t border-borderSoft">
-                <ShieldCheck size={12} className={playRes.verified ? 'text-punkGreen' : 'text-streetGray'} />
-                <span className="font-mono text-[9px] text-streetGray uppercase tracking-widest">
-                  sandbox + 0G Compute{playRes.verified ? ' · TEE-verified' : ''}
-                </span>
+              {/* Attestation receipt */}
+              <div className="pt-2 border-t border-borderSoft space-y-1.5">
+                {playRes.verified ? (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-punkGreen/15 border border-punkGreen/50">
+                    <ShieldCheck size={13} className="text-punkGreen" />
+                    <span className="font-heading text-[11px] text-punkGreen uppercase tracking-widest">TEE-attested on 0G Compute</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-streetGray/10 border border-borderSoft">
+                    <ShieldCheck size={13} className="text-streetGray" />
+                    <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">sandbox + 0G Compute</span>
+                  </div>
+                )}
+                {playRes.provider && playRes.provider !== 'router' && (
+                  <p className="font-mono text-[9px] text-streetGray">
+                    provider <span className="text-violetBright">{String(playRes.provider).slice(0, 10)}…{String(playRes.provider).slice(-4)}</span> · verified inference receipt
+                  </p>
+                )}
               </div>
             </div>
           )}
