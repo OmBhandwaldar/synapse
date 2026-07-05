@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { ethers } from 'ethers';
-import { getProvider } from '@/lib/og/chain';
+import { getProvider, getRegistryContract, AGENT_REGISTRY_ADDRESS } from '@/lib/og/chain';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,8 +38,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ agents: [] });
     }
 
-    // 2. Enrich with live 0G balance from the 0G RPC
+    // 2. Enrich with live 0G balance + on-chain arena stats (wins/losses/Neurons)
     const provider = getProvider();
+    const registry = AGENT_REGISTRY_ADDRESS ? getRegistryContract(provider) : null;
     const enriched = await Promise.all(
       (data ?? []).map(async (agent) => {
         let balance: number | undefined;
@@ -49,6 +50,19 @@ export async function GET(req: NextRequest) {
         } catch {
           balance = undefined; // Account not yet funded/found
         }
+
+        let wins = 0, losses = 0, neurons = 0;
+        if (registry) {
+          try {
+            const rec = await registry.getAgent(agent.agent_address);
+            if (rec.exists) {
+              wins = Number(rec.wins);
+              losses = Number(rec.losses);
+              neurons = Number(rec.neurons);
+            }
+          } catch { /* not registered yet */ }
+        }
+
         return {
           agentAddress: agent.agent_address,
           agentName: agent.agent_name,
@@ -57,6 +71,9 @@ export async function GET(req: NextRequest) {
           equippedSkill1: agent.equipped_skill_1,
           equippedSkill2: agent.equipped_skill_2,
           equippedSkill3: agent.equipped_skill_3,
+          wins,
+          losses,
+          neurons,
         };
       })
     );
