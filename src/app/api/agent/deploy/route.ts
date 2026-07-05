@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { createClient } from '@supabase/supabase-js';
 import { subtle } from 'crypto';
+import { registerAgentOnChain } from '@/lib/arena/registry';
 
 // ─── Supabase (Service Role — server-side only) ──────────────────────────────
 const supabase = createClient(
@@ -56,7 +57,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to save agent' }, { status: 500 });
     }
 
-    // 4. Return only the public address — never expose secret key
+    // 4. Register the agent on-chain (best-effort, non-blocking) so it appears
+    //    in the arena registry/leaderboard before its first match.
+    registerAgentOnChain(agentAddress, ownerAddress, agentName).catch(() => { /* best-effort */ });
+
+    // 5. Return only the public address — never expose secret key
     return NextResponse.json({
       agentAddress,
       agentName,

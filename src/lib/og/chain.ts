@@ -34,9 +34,42 @@ export const MARKETPLACE_ABI = [
   'event SkillPurchased(uint256 indexed skillId, address indexed buyer, uint256 price)',
 ];
 
+export const AGENT_REGISTRY_ADDRESS =
+  process.env.NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS ?? '';
+
+/** Minimal ABI for the AgentRegistry Solidity contract. */
+export const AGENT_REGISTRY_ABI = [
+  'function admin() view returns (address)',
+  'function neuronsPerWin() view returns (uint32)',
+  'function getAgent(address agent) view returns (tuple(address owner,string name,uint32 wins,uint32 losses,uint32 neurons,bool exists))',
+  'function getAgentCount() view returns (uint256)',
+  'function agentList(uint256 index) view returns (address)',
+  'function registerAgent(address agent, address owner, string name)',
+  'function recordMatch(address winner, string winnerName, address loser, string loserName)',
+  'event AgentRegistered(address indexed agent, address indexed owner, string name)',
+  'event MatchRecorded(address indexed winner, address indexed loser, uint32 winnerNeurons)',
+];
+
 /** Read-only JSON-RPC provider for 0G Chain. */
 export function getProvider(): ethers.JsonRpcProvider {
   return new ethers.JsonRpcProvider(OG_RPC_URL, OG_CHAIN_ID);
+}
+
+/**
+ * Returns an AgentRegistry contract bound to either a signer (for writes)
+ * or the default read-only provider.
+ */
+export function getRegistryContract(
+  signerOrProvider?: ethers.Signer | ethers.Provider
+): ethers.Contract {
+  if (!AGENT_REGISTRY_ADDRESS) {
+    throw new Error('NEXT_PUBLIC_AGENT_REGISTRY_ADDRESS is not configured');
+  }
+  return new ethers.Contract(
+    AGENT_REGISTRY_ADDRESS,
+    AGENT_REGISTRY_ABI,
+    signerOrProvider ?? getProvider()
+  );
 }
 
 /**

@@ -21,6 +21,7 @@ import { fetchSkillFromOG } from '@/lib/og/storage';
 import { decryptSkillCode } from '@/lib/encryption';
 import { runMatch, type Fighter, type GameId } from '@/lib/arena/match';
 import { HOUSE_CODE, HOUSE_NAME } from '@/lib/arena/house';
+import { recordMatchOnChain } from '@/lib/arena/registry';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -93,7 +94,21 @@ export async function POST(req: NextRequest) {
 
         const result = await runMatch(gameId, p1, p2, (turn) => send('turn', turn));
 
-        send('result', result);
+        // Record the result on-chain when it's a decisive Agent-vs-Agent match
+        // (House has no wallet, and draws don't move the standings).
+        let txHash: string | null = null;
+        const bothRealAgents = !p1.isHouse && !p2.isHouse;
+        if (bothRealAgents && (result.winnerSide === 'p1' || result.winnerSide === 'p2')) {
+          const winner = result.winnerSide === 'p1' ? p1 : p2;
+          const loser = result.winnerSide === 'p1' ? p2 : p1;
+          send('progress', { message: 'Recording the result on 0G Chain…' });
+          txHash = await recordMatchOnChain(
+            { address: winner.agentAddress!, name: winner.agentName },
+            { address: loser.agentAddress!, name: loser.agentName },
+          );
+        }
+
+        send('result', { ...result, txHash });
       } catch (err: any) {
         send('error', { error: err?.message ?? 'Match failed' });
       } finally {

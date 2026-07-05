@@ -43,6 +43,7 @@ interface ResultEvent {
   winnerName: string | null;
   reason: string;
   finalState: any;
+  txHash?: string | null;
 }
 
 const GAMES = [
@@ -369,6 +370,16 @@ function BattleView({
             {result.winnerSide === 'draw' ? 'Draw' : `${result.winnerName ?? (result.winnerSide === 'p1' ? p1Name : p2Name)} wins`}
           </p>
           <p className="font-mono text-[11px] text-streetGray mt-1">{result.reason}</p>
+          {result.txHash && (
+            <a
+              href={`${EXPLORER}/tx/${result.txHash}`}
+              target="_blank" rel="noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet/12 border border-[rgba(139,92,246,0.4)] hover:border-violet transition-colors"
+            >
+              <span className="font-mono text-[10px] text-violetBright uppercase tracking-widest">Result recorded on 0G Chain</span>
+              <ExternalLink size={11} className="text-violetBright" />
+            </a>
+          )}
         </div>
       )}
 
