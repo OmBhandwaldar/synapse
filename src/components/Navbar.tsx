@@ -11,7 +11,8 @@ const NAV_ITEMS = [
   { label: "Home", href: "/", jp: "ホーム" },
   { label: "Market", href: "/marketplace", jp: "市場" },
   { label: "Agents", href: "/agents", jp: "エージェント" },
-  // Arena + Predictions are deferred to a later round — hidden from nav.
+  { label: "Arena", href: "/arena", jp: "アリーナ" },
+  // Predictions is deferred to a later round — hidden from nav.
 ];
 
 export default function Navbar() {
