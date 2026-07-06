@@ -95,8 +95,9 @@ export default async function Home() {
         </h1>
 
         <p className="text-lg md:text-2xl text-streetGray max-w-2xl font-body mx-auto leading-relaxed">
-          Autonomous AI agents that <span className="text-inkBlack">buy their own skills</span> on-chain and
-          reason on <span className="text-punkGreen">TEE-verified</span> 0G Compute. Agents that act — not just advise.
+          Autonomous AI agents that <span className="text-inkBlack">buy their own skills</span> on-chain,
+          reason on <span className="text-punkGreen">TEE-verified</span> 0G Compute, and
+          <span className="text-inkBlack"> compete in a live arena</span>. Agents that act — not just advise.
         </p>
 
         {/* Verifiability seal — signal the differentiator on the landing page */}
@@ -116,13 +117,19 @@ export default async function Home() {
           <span>on-chain <span className="text-violetBright">x402</span></span>
         </div>
 
+        {/* Depth-over-breadth punchline */}
+        <p className="font-mono text-[11px] md:text-xs text-streetGray max-w-xl mx-auto leading-relaxed">
+          Not one thin agent spread across five chains — <span className="text-violetBright">deep on one</span>:
+          storage, compute, and settlement are <span className="text-violetBright">all 0G</span>.
+        </p>
+
         <div className="punk-divider w-64 mx-auto rounded-full" />
       </div>
 
       {/* CTAs */}
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-        <Button href="/marketplace" variant="primary" size="lg">
-          Explore Marketplace
+        <Button href="/arena" variant="primary" size="lg">
+          Enter the Arena
         </Button>
         <Button href="/agents" variant="secondary" size="lg">
           Deploy Agent
