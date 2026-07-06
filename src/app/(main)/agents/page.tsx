@@ -46,30 +46,33 @@ interface AgentInfo {
   agentAddress: string;
   agentName: string;
   ownerAddress: string;
-  balance?: number; // ALGO balance of the agent wallet
+  balance?: number; // 0G balance of the agent wallet
   equippedSkill1?: string;
   equippedSkill2?: string;
   equippedSkill3?: string;
+  wins?: number;
+  losses?: number;
+  neurons?: number; // on-chain Neurons from AgentRegistry
 }
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function NeuronsLevelBar({ neurons }: { neurons: number }) {
   const tier = getTier(neurons);
-  // Slim, honest status strip — no fake progress bar. Neurons progression
-  // (earned from on-chain wins) ships in a later round; we don't advertise
-  // movement that can't happen yet.
+  // Neurons are real: earned on-chain (+10 per arena win) and read from the
+  // AgentRegistry contract on 0G Chain.
   return (
     <div className="punk-card p-3.5 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
       <div className="flex items-center gap-2.5">
         <Cpu size={18} className="text-violetBright" />
         <span className="font-heading text-xs uppercase tracking-widest text-violetBright">{tier.label} tier</span>
         <span className="font-mono text-[10px] text-streetGray uppercase tracking-widest">
-          <span className="text-punkBlue font-bold">{tier.maxSkills}</span> skills/agent
+          <span className="text-punkGreen font-bold">{neurons}</span> Neurons ·
+          <span className="text-punkBlue font-bold"> {tier.maxSkills}</span> skills/agent
         </span>
       </div>
       <span className="font-mono text-[9px] text-streetGray uppercase tracking-widest opacity-70">
-        Neurons progression · on-chain wins · coming soon
+        Neurons earned on-chain · +10 per arena win
       </span>
     </div>
   );
@@ -322,8 +325,8 @@ export default function AgentsPage() {
   const [loadingSkills, setLoadingSkills] = useState(false);
   const [showDeploy, setShowDeploy] = useState(false);
 
-  // Mocked neurons — will be fetched from AgentRegistry contract once deployed
-  const [neurons] = useState(0);
+  // Real Neurons — summed from each agent's on-chain AgentRegistry record.
+  const neurons = agents.reduce((sum, a) => sum + (a.neurons ?? 0), 0);
   const tier = getTier(neurons);
 
   // ── Fetch owned skills ──
